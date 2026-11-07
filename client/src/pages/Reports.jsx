@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import GlucoseChart from "../components/GlucoseChart";
 
 const REPORT_TYPES = [
     { value: "daily", label: "Daily Report" },
@@ -30,6 +31,7 @@ function getLocalDate() {
  * - Unified navbar and breadcrumb navigation
  * - Elegant filter controls card
  * - Visual stat cards with status icons and indicators
+ * - Interactive Glucose Trend Chart integration
  * - Polished tabular report representation
  */
 function Reports() {
@@ -211,6 +213,9 @@ function Reports() {
                                 <div className="stat-footer">In selected timeframe</div>
                             </div>
                         </section>
+
+                        {/* Glucose Trend Visual Chart */}
+                        <GlucoseChart readings={readings} />
 
                         {/* Daily Readings Table breakdown (only shown when reportType is daily) */}
                         {reportType === "daily" && (
