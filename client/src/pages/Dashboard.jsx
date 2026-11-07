@@ -23,10 +23,14 @@ function Dashboard() {
                 ]);
 
                 setReport(reportResponse.data);
+                const allReadings = Array.isArray(readingsResponse.data)
+                    ? readingsResponse.data
+                    : readingsResponse.data.readings || [];
+
                 setReadings(
-                    Array.isArray(readingsResponse.data)
-                        ? readingsResponse.data
-                        : readingsResponse.data.readings || []
+                    allReadings.filter(
+                        (reading) => String(reading.date).slice(0, 10) === today
+                    )
                 );
             } catch (err) {
                 setError(

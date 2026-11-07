@@ -239,3 +239,269 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.readings-content {
+  max-width: 1100px;
+  margin: 35px auto;
+  padding: 0 20px;
+}
+
+.reading-form-card,
+.readings-table-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 25px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.04);
+}
+
+.reading-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.reading-form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reading-form label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.reading-form input,
+.reading-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dce1e8;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: row !important;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.form-actions button,
+.edit-btn,
+.delete-btn {
+  border: none;
+  border-radius: 7px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.form-actions button {
+  background: #e56b91;
+  color: white;
+}
+
+.form-actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.form-actions .cancel-btn {
+  background: #e9edf2;
+  color: #333;
+}
+
+.success-message {
+  color: #21864b;
+  font-size: 14px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.readings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  min-width: 600px;
+}
+
+.readings-table th,
+.readings-table td {
+  padding: 15px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.readings-table th {
+  color: #666;
+  background: #fafafa;
+  font-size: 14px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn {
+  background: #fff0f5;
+  color: #d94e7b;
+}
+
+.delete-btn {
+  background: #ffebeb;
+  color: #d32f2f;
+}
+
+.back-link {
+  color: #e56b91;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+@media (max-width: 650px) {
+  .reading-form {
+    grid-template-columns: 1fr;
+  }
+
+  .reading-form-card,
+  .readings-table-card {
+    padding: 18px;
+  }
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal h3 {
+  margin: 0 0 8px;
+}
+
+.modal p {
+  margin: 0 0 20px;
+  color: #555;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.reports-content {
+  max-width: 1100px;
+  margin: 35px auto;
+  padding: 0 20px;
+}
+
+.report-filter-card {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 25px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.filter-field label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.filter-field select,
+.filter-field input {
+  padding: 12px;
+  border: 1px solid #dce1e8;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+}
+
+.report-range {
+  color: #777;
+  margin-top: 25px;
+}
+
+.report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-top: 25px;
+}
+
+.report-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.04);
+}
+
+.report-card p {
+  color: #777;
+  margin-top: 0;
+}
+
+.report-card h2 {
+  color: #e56b91;
+  font-size: 30px;
+  margin: 12px 0 4px;
+}
+
+.report-card span {
+  color: #888;
+  font-size: 13px;
+}
+
+.report-readings-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 25px;
+}
+
+@media (max-width: 700px) {
+  .report-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .report-filter-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 400px) {
+  .report-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
