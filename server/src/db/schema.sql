@@ -1,18 +1,26 @@
 CREATE TABLE IF NOT EXISTS users (
-  id INTEGER,
-  name VARCHAR(255),
-  email VARCHAR(255),
-  password_hash TEXT,
-  created_at TIMESTAMPTZ
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS readings (
-  id INTEGER,
-  user_id INTEGER,
-  date DATE,
-  slot VARCHAR(30),
-  value INTEGER,
-  created_at TIMESTAMPTZ
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    slot VARCHAR(30) NOT NULL CHECK (
+        slot IN (
+            'Morning fasting',
+            'After breakfast',
+            'After lunch',
+            'After dinner'
+        )
+    ),
+    value INTEGER NOT NULL CHECK (value BETWEEN 40 AND 600),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, date, slot)
 );
 
-CREATE INDEX IF NOT EXISTS idx_readings_user_date ON readings(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_readings_user_date ON readings (user_id, date);

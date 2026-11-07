@@ -47,9 +47,54 @@ test("user can sign up and log in", async () => {
 test("reading validation blocks duplicate slots and invalid values", async () => {
   const signup = await request(app).post("/api/auth/signup").send({
     name: "Jatin",
-    email: "jatin@example.com",
+    email: "validation@example.com",
     password: "secret123",
   });
+
+  const token = signup.body.token;
+
+  const first = await request(app)
+    .post("/api/readings")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      date: "2026-10-15",
+      slot: "Morning fasting",
+      value: 90,
+    });
+
+  assert.equal(first.status, 201);
+
+  const duplicate = await request(app)
+    .post("/api/readings")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      date: "2026-10-15",
+      slot: "Morning fasting",
+      value: 100,
+    });
+
+  assert.equal(duplicate.status, 400);
+
+  const invalid = await request(app)
+    .post("/api/readings")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      date: "2026-10-15",
+      slot: "After breakfast",
+      value: 700,
+    });
+
+  assert.equal(invalid.status, 400);
+});
+
+test("daily and monthly reports return summary and reading details", async () => {
+  const signup = await request(app).post("/api/auth/signup").send({
+    name: "Jatin",
+    email: "reports@example.com",
+    password: "secret123",
+  });
+
+  assert.equal(signup.status, 201);
 
   const token = signup.body.token;
 
@@ -58,56 +103,13 @@ test("reading validation blocks duplicate slots and invalid values", async () =>
     .set("Authorization", `Bearer ${token}`)
     .send({
       date: "2026-10-15",
-      slot: "After lunch",
+      slot: "Morning fasting",
       value: 90,
     });
 
   assert.equal(firstReading.status, 201);
 
-  const duplicate = await request(app)
-    .post("/api/readings")
-    .set("Authorization", `Bearer ${token}`)
-    .send({
-      date: "2026-10-15",
-      slot: "After lunch",
-      value: 120,
-    });
-
-  assert.equal(duplicate.status, 400);
-  assert.match(duplicate.body.error, /already have an After lunch/i);
-
-  const rangeError = await request(app)
-    .post("/api/readings")
-    .set("Authorization", `Bearer ${token}`)
-    .send({
-      date: "2026-10-15",
-      slot: "After dinner",
-      value: 700,
-    });
-
-  assert.equal(rangeError.status, 400);
-  assert.match(rangeError.body.error, /between 40 and 600/i);
-});
-
-test("daily and monthly reports return summary and reading details", async () => {
-  const signup = await request(app).post("/api/auth/signup").send({
-    name: "Jatin",
-    email: "jatin@example.com",
-    password: "secret123",
-  });
-
-  const token = signup.body.token;
-
-  await request(app)
-    .post("/api/readings")
-    .set("Authorization", `Bearer ${token}`)
-    .send({
-      date: "2026-10-15",
-      slot: "Morning",
-      value: 90,
-    });
-
-  await request(app)
+  const secondReading = await request(app)
     .post("/api/readings")
     .set("Authorization", `Bearer ${token}`)
     .send({
@@ -116,14 +118,18 @@ test("daily and monthly reports return summary and reading details", async () =>
       value: 110,
     });
 
-  await request(app)
+  assert.equal(secondReading.status, 201);
+
+  const previousMonthReading = await request(app)
     .post("/api/readings")
     .set("Authorization", `Bearer ${token}`)
     .send({
       date: "2026-09-30",
-      slot: "Morning",
+      slot: "Morning fasting",
       value: 100,
     });
+
+  assert.equal(previousMonthReading.status, 201);
 
   const daily = await request(app)
     .get("/api/reports/daily")

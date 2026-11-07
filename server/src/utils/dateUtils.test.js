@@ -43,3 +43,16 @@ test("buildSummary calculates minimum maximum average and count", () => {
   assert.equal(summary.average, 100);
   assert.equal(summary.count, 3);
 });
+test("invalid calendar dates are rejected", () => {
+  const { parseDateString } = require("./dateUtils");
+
+  assert.equal(parseDateString("2026-02-30"), null);
+  assert.equal(parseDateString("2026-13-10"), null);
+  assert.equal(parseDateString("invalid"), null);
+});
+
+test("average is rounded to one decimal place", () => {
+  const summary = buildSummary([{ value: 90 }, { value: 100 }, { value: 111 }]);
+
+  assert.equal(summary.average, 100.3);
+});

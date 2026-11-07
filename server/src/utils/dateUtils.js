@@ -1,5 +1,5 @@
 const SLOT_ORDER = [
-  "Morning",
+  "Morning fasting",
   "After breakfast",
   "After lunch",
   "After dinner",
@@ -17,14 +17,27 @@ function parseDateString(dateString) {
     return null;
   }
 
-  const [year, month, day] = String(dateString).split("-").map(Number);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateString));
 
-  if (!year || !month || !day) {
+  if (!match) {
     return null;
   }
 
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
   const date = new Date(year, month - 1, day);
-  return Number.isNaN(date.getTime()) ? null : date;
+
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
 }
 
 function getTodayLocal() {
