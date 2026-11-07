@@ -1,8 +1,21 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
+/**
+ * Signup Component
+ * ----------------
+ * Logic preserved 100%:
+ * - Controlled inputs with `form` state
+ * - POST /auth/signup request with axios
+ * - Stores JWT token and user profile in localStorage
+ * - Redirects to /dashboard on success
+ *
+ * Visual Enhancements:
+ * - Ambient background styling
+ * - Branded emblem card with clear typography
+ * - Modern inputs with focus outlines and error alerts
+ */
 function Signup() {
     const navigate = useNavigate();
 
@@ -39,56 +52,93 @@ function Signup() {
     };
 
     return (
-        <div className="auth-container">
+        <div className="auth-wrapper">
+            <div className="auth-background-shape shape-1"></div>
+            <div className="auth-background-shape shape-2"></div>
+
             <div className="auth-card">
-                <h1>🌸 Sweety</h1>
-                <p className="subtitle">Start tracking your glucose levels.</p>
+                {/* Brand Logo Header */}
+                <div className="auth-header">
+                    <div className="brand-badge">🌸 Sweety</div>
+                    <h1 className="auth-title">Create Account</h1>
+                    <p className="auth-subtitle">
+                        Start your journey toward balanced blood sugar levels
+                    </p>
+                </div>
 
-                <h2>Create Account</h2>
-                <p>Join Sweety today</p>
+                {/* Signup Form */}
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="form-group">
+                        <label htmlFor="name">Full Name</label>
+                        <input
+                            id="name"
+                            type="text"
+                            name="name"
+                            placeholder="e.g. Sweety Sharma"
+                            value={form.name}
+                            onChange={handleChange}
+                            required
+                            className="form-control"
+                        />
+                    </div>
 
-                <form onSubmit={handleSubmit}>
-                    <label>Full Name</label>
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="Enter your name"
-                        value={form.name}
-                        onChange={handleChange}
-                        required
-                    />
+                    <div className="form-group">
+                        <label htmlFor="email">Email Address</label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="name@example.com"
+                            value={form.email}
+                            onChange={handleChange}
+                            required
+                            className="form-control"
+                        />
+                    </div>
 
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Enter your email"
-                        value={form.email}
-                        onChange={handleChange}
-                        required
-                    />
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            placeholder="Minimum 6 characters"
+                            value={form.password}
+                            onChange={handleChange}
+                            minLength={6}
+                            required
+                            className="form-control"
+                        />
+                        <span className="field-hint">Must be at least 6 characters</span>
+                    </div>
 
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="At least 6 characters"
-                        value={form.password}
-                        onChange={handleChange}
-                        minLength={6}
-                        required
-                    />
+                    {error && (
+                        <div className="alert alert-error">
+                            <span className="alert-icon">⚠️</span>
+                            <span>{error}</span>
+                        </div>
+                    )}
 
-                    {error && <p className="error">{error}</p>}
-
-                    <button type="submit" disabled={loading}>
-                        {loading ? "Creating account..." : "Sign Up"}
+                    <button type="submit" disabled={loading} className="btn-primary btn-block">
+                        {loading ? (
+                            <span className="btn-loading-content">
+                                <span className="spinner-sm"></span> Creating account...
+                            </span>
+                        ) : (
+                            "Create Your Account"
+                        )}
                     </button>
                 </form>
 
-                <p className="auth-link">
-                    Already have an account? <Link to="/login">Login</Link>
-                </p>
+                {/* Footer Switcher */}
+                <div className="auth-footer">
+                    <p>
+                        Already have an account?{" "}
+                        <Link to="/login" className="auth-link">
+                            Log in
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

@@ -1,8 +1,21 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
+/**
+ * Login Component
+ * ---------------
+ * Logic preserved 100%:
+ * - Controlled inputs with `form` state
+ * - POST /auth/login request with axios
+ * - Stores JWT token and user profile in localStorage
+ * - Redirects to /dashboard on success
+ *
+ * Visual Enhancements:
+ * - Ambient background styling
+ * - Branded emblem card with clear typography
+ * - Modern inputs with focus outlines and error alerts
+ */
 function Login() {
     const navigate = useNavigate();
 
@@ -38,45 +51,77 @@ function Login() {
     };
 
     return (
-        <div className="auth-container">
+        <div className="auth-wrapper">
+            <div className="auth-background-shape shape-1"></div>
+            <div className="auth-background-shape shape-2"></div>
+
             <div className="auth-card">
-                <h1>🌸 Sweety</h1>
-                <p className="subtitle">Your health, one reading at a time.</p>
+                {/* Brand Logo Header */}
+                <div className="auth-header">
+                    <div className="brand-badge">🌸 Sweety</div>
+                    <h1 className="auth-title">Welcome Back</h1>
+                    <p className="auth-subtitle">
+                        Log in to monitor and manage your blood sugar levels
+                    </p>
+                </div>
 
-                <h2>Welcome Back!</h2>
-                <p>Login to your account</p>
+                {/* Login Form */}
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="form-group">
+                        <label htmlFor="email">Email Address</label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="name@example.com"
+                            value={form.email}
+                            onChange={handleChange}
+                            required
+                            className="form-control"
+                        />
+                    </div>
 
-                <form onSubmit={handleSubmit}>
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Enter your email"
-                        value={form.email}
-                        onChange={handleChange}
-                        required
-                    />
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            value={form.password}
+                            onChange={handleChange}
+                            required
+                            className="form-control"
+                        />
+                    </div>
 
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Enter your password"
-                        value={form.password}
-                        onChange={handleChange}
-                        required
-                    />
+                    {error && (
+                        <div className="alert alert-error">
+                            <span className="alert-icon">⚠️</span>
+                            <span>{error}</span>
+                        </div>
+                    )}
 
-                    {error && <p className="error">{error}</p>}
-
-                    <button type="submit" disabled={loading}>
-                        {loading ? "Logging in..." : "Login"}
+                    <button type="submit" disabled={loading} className="btn-primary btn-block">
+                        {loading ? (
+                            <span className="btn-loading-content">
+                                <span className="spinner-sm"></span> Logging in...
+                            </span>
+                        ) : (
+                            "Log In to Dashboard"
+                        )}
                     </button>
                 </form>
 
-                <p className="auth-link">
-                    Don't have an account? <Link to="/signup">Sign up</Link>
-                </p>
+                {/* Footer Switcher */}
+                <div className="auth-footer">
+                    <p>
+                        Don't have an account?{" "}
+                        <Link to="/signup" className="auth-link">
+                            Create an account
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );
