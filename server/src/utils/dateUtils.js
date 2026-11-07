@@ -118,6 +118,7 @@ function buildSummary(readings) {
 
 module.exports = {
   SLOT_ORDER,
+  toLocalDateString,
   parseDateString,
   isDateInFuture,
   formatDateLabel,

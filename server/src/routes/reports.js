@@ -4,18 +4,20 @@ const {
   buildSummary,
   getDateRangeForPeriod,
   formatDateLabel,
+  toLocalDateString,
 } = require("../utils/dateUtils");
 
 const router = express.Router();
 
 function getDateString(value) {
-  return value || new Date().toISOString().slice(0, 10);
+  const selected = value || new Date();
+  return typeof selected === "string" ? selected : toLocalDateString(selected);
 }
 
 async function fetchRangeReport(userId, dateString, period) {
   const range = getDateRangeForPeriod(dateString, period);
-  const start = range.start.toISOString().slice(0, 10);
-  const end = range.end.toISOString().slice(0, 10);
+  const start = toLocalDateString(range.start);
+  const end = toLocalDateString(range.end);
 
   const result = await query(
     "SELECT * FROM readings WHERE user_id = $1 AND date BETWEEN $2 AND $3 ORDER BY date ASC, created_at ASC",

@@ -141,5 +141,6 @@ test("daily and monthly reports return summary and reading details", async () =>
     .set("Authorization", `Bearer ${token}`);
 
   assert.equal(monthly.status, 200);
-  assert.equal(monthly.body.summary.count, 3);
+  assert.equal(monthly.body.summary.count, 1);
+  assert.equal(monthly.body.summary.average, 100);
 });

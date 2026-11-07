@@ -8,8 +8,13 @@ const authRoutes = require("./routes/auth");
 const readingsRoutes = require("./routes/readings");
 const reportsRoutes = require("./routes/reports");
 const { authMiddleware } = require("./middleware/auth");
+const { initializeDatabase } = require("./config/db");
 
 const app = express();
+
+initializeDatabase().catch((error) => {
+  console.error("Database initialization failed:", error);
+});
 
 app.use(cors());
 app.use(express.json());

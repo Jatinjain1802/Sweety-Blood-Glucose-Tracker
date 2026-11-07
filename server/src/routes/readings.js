@@ -133,9 +133,14 @@ router.post("/", async (req, res) => {
       );
   }
 
+  const nextReadingIdResult = await query(
+    "SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM readings",
+  );
+  const readingId = Number(nextReadingIdResult.rows[0].next_id);
+
   const result = await query(
-    "INSERT INTO readings (user_id, date, slot, value) VALUES ($1, $2, $3, $4) RETURNING *",
-    [req.user.id, date, slot, Number(value)],
+    "INSERT INTO readings (id, user_id, date, slot, value, created_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *",
+    [readingId, req.user.id, date, slot, Number(value)],
   );
 
   return res.status(201).json({ reading: result.rows[0] });
@@ -187,9 +192,9 @@ router.put("/:id", async (req, res) => {
     "SELECT id FROM readings WHERE user_id = $1 AND date = $2",
     [req.user.id, date],
   );
-  const currentSlotSameDate = Number(reading.date) === Number(new Date(date));
+  const currentDateMatches = String(reading.date) === String(date);
 
-  if (countCheck.rows.length >= 4 && !currentSlotSameDate) {
+  if (countCheck.rows.length >= 4 && !currentDateMatches) {
     return res
       .status(400)
       .json(
