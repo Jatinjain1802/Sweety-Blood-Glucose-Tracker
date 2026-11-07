@@ -333,6 +333,34 @@ function Readings() {
                                 Total {pagination.total} reading{pagination.total === 1 ? "" : "s"} stored
                             </p>
                         </div>
+
+                        {pagination.total > 0 && (
+                            <div className="pagination-controls">
+                                <button
+                                    type="button"
+                                    className="btn-pagination"
+                                    disabled={currentPage <= 1 || loading}
+                                    onClick={() => setCurrentPage((page) => page - 1)}
+                                    title="Previous Page"
+                                >
+                                    ← Previous
+                                </button>
+
+                                <span className="pagination-page-indicator">
+                                    Page <strong>{pagination.page}</strong> of <strong>{pagination.pages}</strong>
+                                </span>
+
+                                <button
+                                    type="button"
+                                    className="btn-pagination"
+                                    disabled={currentPage >= pagination.pages || loading}
+                                    onClick={() => setCurrentPage((page) => page + 1)}
+                                    title="Next Page"
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {loading ? (
@@ -416,31 +444,6 @@ function Readings() {
                                     })}
                                 </tbody>
                             </table>
-                        </div>
-                    )}
-                    {pagination.total > 0 && (
-                        <div className="pagination-controls">
-                            <button
-                                type="button"
-                                className="btn-secondary"
-                                disabled={currentPage <= 1 || loading}
-                                onClick={() => setCurrentPage((page) => page - 1)}
-                            >
-                                ← Previous
-                            </button>
-
-                            <span>
-                                Page {pagination.page} of {pagination.pages}
-                            </span>
-
-                            <button
-                                type="button"
-                                className="btn-secondary"
-                                disabled={currentPage >= pagination.pages || loading}
-                                onClick={() => setCurrentPage((page) => page + 1)}
-                            >
-                                Next →
-                            </button>
                         </div>
                     )}
                 </section>
