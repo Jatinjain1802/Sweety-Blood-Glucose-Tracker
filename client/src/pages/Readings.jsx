@@ -33,6 +33,13 @@ function getLocalDate() {
  */
 function Readings() {
     const [readings, setReadings] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 20,
+        total: 0,
+        pages: 1,
+    });
     const [form, setForm] = useState({
         date: getLocalDate(),
         slot: SLOTS[0],
@@ -48,13 +55,21 @@ function Readings() {
 
     const today = getLocalDate();
 
-    const fetchReadings = async () => {
+    const fetchReadings = async (pageToLoad = currentPage) => {
         try {
             setLoading(true);
-            const response = await api.get("/readings");
+
+            const response = await api.get(
+                `/readings?page=${pageToLoad}&limit=20`
+            );
+
             const data = response.data;
 
             setReadings(Array.isArray(data) ? data : data.readings || []);
+
+            if (data.pagination) {
+                setPagination(data.pagination);
+            }
         } catch (err) {
             setError(err.response?.data?.error || "Could not load readings.");
         } finally {
@@ -63,8 +78,8 @@ function Readings() {
     };
 
     useEffect(() => {
-        fetchReadings();
-    }, []);
+        fetchReadings(currentPage);
+    }, [currentPage]);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -315,7 +330,7 @@ function Readings() {
                         <div>
                             <h3 className="card-heading">Recorded Readings History</h3>
                             <p className="card-subheading">
-                                Total {readings.length} reading{readings.length === 1 ? "" : "s"} stored
+                                Total {pagination.total} reading{pagination.total === 1 ? "" : "s"} stored
                             </p>
                         </div>
                     </div>
@@ -353,10 +368,10 @@ function Readings() {
                                             Number(reading.value) < 70
                                                 ? "Low"
                                                 : Number(reading.value) <= 140
-                                                ? "Normal"
-                                                : Number(reading.value) <= 199
-                                                ? "Elevated"
-                                                : "High";
+                                                    ? "Normal"
+                                                    : Number(reading.value) <= 199
+                                                        ? "Elevated"
+                                                        : "High";
 
                                         return (
                                             <tr key={reading.id}>
@@ -401,6 +416,31 @@ function Readings() {
                                     })}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+                    {pagination.total > 0 && (
+                        <div className="pagination-controls">
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                disabled={currentPage <= 1 || loading}
+                                onClick={() => setCurrentPage((page) => page - 1)}
+                            >
+                                ← Previous
+                            </button>
+
+                            <span>
+                                Page {pagination.page} of {pagination.pages}
+                            </span>
+
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                disabled={currentPage >= pagination.pages || loading}
+                                onClick={() => setCurrentPage((page) => page + 1)}
+                            >
+                                Next →
+                            </button>
                         </div>
                     )}
                 </section>
