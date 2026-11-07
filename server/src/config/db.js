@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { Pool } = require("pg");
 const { newDb } = require("pg-mem");
 
@@ -19,9 +21,17 @@ function createPool() {
 }
 
 const pool = createPool();
+const schemaSql = fs.readFileSync(
+  path.join(__dirname, "..", "db", "schema.sql"),
+  "utf8",
+);
 
 async function query(text, params) {
   return pool.query(text, params);
+}
+
+async function initializeDatabase() {
+  await query(schemaSql);
 }
 
 async function close() {
@@ -30,4 +40,4 @@ async function close() {
   }
 }
 
-module.exports = { pool, query, close };
+module.exports = { pool, query, close, initializeDatabase };

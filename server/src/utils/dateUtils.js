@@ -5,6 +5,13 @@ const SLOT_ORDER = [
   "After dinner",
 ];
 
+function toLocalDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function parseDateString(dateString) {
   if (!dateString) {
     return null;
@@ -61,10 +68,12 @@ function getDateRangeForPeriod(dateString, period) {
   }
 
   if (period === "month-to-date") {
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month, selected.getDate());
     return {
-      start: new Date(year, month, 1),
-      end: new Date(year, month, selected.getDate()),
-      label: `${formatDateLabel(new Date(year, month, 1).toISOString().slice(0, 10))} – ${formatDateLabel(dateString)}`,
+      start,
+      end,
+      label: `${formatDateLabel(toLocalDateString(start))} – ${formatDateLabel(dateString)}`,
     };
   }
 
@@ -74,7 +83,7 @@ function getDateRangeForPeriod(dateString, period) {
   return {
     start: previousMonthStart,
     end: previousMonthEnd,
-    label: `${formatDateLabel(new Date(previousMonthStart.getFullYear(), previousMonthStart.getMonth(), 1).toISOString().slice(0, 10))} – ${formatDateLabel(new Date(previousMonthEnd.getFullYear(), previousMonthEnd.getMonth(), previousMonthEnd.getDate()).toISOString().slice(0, 10))}`,
+    label: `${formatDateLabel(toLocalDateString(previousMonthStart))} – ${formatDateLabel(toLocalDateString(previousMonthEnd))}`,
   };
 }
 

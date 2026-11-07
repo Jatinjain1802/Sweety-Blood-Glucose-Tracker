@@ -70,8 +70,13 @@ router.get("/", async (req, res) => {
   const total = result.rows.length;
   const paginatedRows = result.rows.slice(offset, offset + limit);
 
+  const readings = paginatedRows.map((reading) => ({
+    ...reading,
+    value: Number(reading.value),
+  }));
+
   return res.json({
-    readings: paginatedRows,
+    readings,
     pagination: {
       page,
       limit,
