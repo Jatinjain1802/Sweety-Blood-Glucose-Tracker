@@ -46,14 +46,16 @@ router.post("/signup", async (req, res) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const nextIdResult = await query(
-    "SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM users",
-  );
-  const userId = Number(nextIdResult.rows[0].next_id);
+  // const nextIdResult = await query(
+  //   "SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM users",
+  // );
+  // const userId = Number(nextIdResult.rows[0].next_id);
 
   const result = await query(
-    "INSERT INTO users (id, name, email, password_hash, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, name, email",
-    [userId, String(name).trim(), normalizedEmail, passwordHash],
+    `INSERT INTO users (name, email, password_hash)
+   VALUES ($1, $2, $3)
+   RETURNING id, name, email`,
+    [String(name).trim(), normalizedEmail, passwordHash],
   );
 
   const user = result.rows[0];
