@@ -3,11 +3,14 @@ require("dotenv").config({
   path: path.resolve(__dirname, "../../.env"),
 });
 
-const { Pool } = require("pg");
+const { Pool, types } = require("pg");
+
+// Keep PostgreSQL DATE values as YYYY-MM-DD strings.
+
 const fs = require("fs");
 
 const databaseUrl = process.env.DATABASE_URL;
-
+types.setTypeParser(1082, (value) => value);
 if (!databaseUrl) {
   throw new Error(
     "DATABASE_URL is missing. Check the .env file in your server folder.",
