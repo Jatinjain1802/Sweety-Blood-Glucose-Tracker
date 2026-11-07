@@ -58,19 +58,26 @@ async function getReadingById(userId, readingId) {
 }
 
 router.get("/", async (req, res) => {
-  const page = Math.max(1, Number(req.query.page || 1));
-  const limit = Math.min(50, Math.max(1, Number(req.query.limit || 20)));
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
   const offset = (page - 1) * limit;
 
-  const result = await query(
-    "SELECT * FROM readings WHERE user_id = $1 ORDER BY date DESC, created_at DESC",
+  const countResult = await query(
+    "SELECT COUNT(*) FROM readings WHERE user_id = $1",
     [req.user.id],
   );
 
-  const total = result.rows.length;
-  const paginatedRows = result.rows.slice(offset, offset + limit);
+  const total = Number(countResult.rows[0].count);
 
-  const readings = paginatedRows.map((reading) => ({
+  const result = await query(
+    `SELECT * FROM readings
+     WHERE user_id = $1
+     ORDER BY date DESC, created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [req.user.id, limit, offset],
+  );
+
+  const readings = result.rows.map((reading) => ({
     ...reading,
     value: Number(reading.value),
   }));
