@@ -226,14 +226,66 @@ function MyDoctor() {
       {/* ===== FIND DOCTORS ===== */}
       {section === "find" && (
         <div>
-          <div className="search-bar">
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Search by doctor name or email…"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          {/* Enhanced Search Header & Input */}
+          <div className="doctor-search-container">
+            <div className="doctor-search-bar">
+              <span className="search-icon" aria-hidden="true">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </span>
+              <input
+                id="doctor-search-input"
+                type="text"
+                className="doctor-search-input"
+                placeholder="Search registered doctors by name or email…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                autoComplete="off"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => setSearchTerm("")}
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Live Search Status & Quick Filter Chips */}
+            <div className="search-meta-row">
+              <span className="search-count-badge">
+                {doctorsLoading
+                  ? "Searching..."
+                  : searchTerm
+                  ? `Found ${doctors.length} doctor${doctors.length === 1 ? "" : "s"} matching "${searchTerm}"`
+                  : `Showing all ${doctors.length} registered doctor${doctors.length === 1 ? "" : "s"}`}
+              </span>
+
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="btn-reset-filter"
+                  onClick={() => setSearchTerm("")}
+                >
+                  Reset search
+                </button>
+              )}
+            </div>
           </div>
 
           {sendMsg && (
