@@ -70,6 +70,7 @@ function Navbar() {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Readings", path: "/readings" },
     { label: "Reports", path: "/reports" },
+    { label: "Profile", path: "/profile" },
   ];
 
   return (
@@ -103,10 +104,14 @@ function Navbar() {
 
           {/* User Profile & Logout Action */}
           <div className="navbar-actions">
-            <div className="user-badge" title={`Logged in as ${userName}`}>
+            <Link
+              to="/profile"
+              className="user-badge"
+              title={`Logged in as ${userName} — View Profile`}
+            >
               <span className="user-avatar">{userInitial}</span>
               <span className="user-name">{userName}</span>
-            </div>
+            </Link>
 
             <button
               type="button"
