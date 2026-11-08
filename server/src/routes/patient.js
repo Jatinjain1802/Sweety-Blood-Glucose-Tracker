@@ -294,3 +294,4 @@ router.delete("/authorized-doctors/:requestId", async (req, res) => {
 });
 
 module.exports = router;
+

@@ -6,8 +6,13 @@ const {
   formatDateLabel,
   toLocalDateString,
 } = require("../utils/dateUtils");
+const { requireRole } = require("../middleware/auth");
 
 const router = express.Router();
+
+// 🎓 Reports for own data are patient-only.
+//    Doctors access patient reports via /api/doctor/patients/:id/reports/*
+router.use(requireRole("patient"));
 
 function getDateString(value) {
   const selected = value || new Date();

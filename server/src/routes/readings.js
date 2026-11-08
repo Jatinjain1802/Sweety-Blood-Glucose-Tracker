@@ -5,8 +5,14 @@ const {
   isDateInFuture,
   parseDateString,
 } = require("../utils/dateUtils");
+const { requireRole } = require("../middleware/auth");
 
 const router = express.Router();
+
+// 🎓 Readings (add/edit/delete/view own) are PATIENT-ONLY operations.
+//    Doctors use /api/doctor/patients/:id/readings to view patient data (read-only).
+//    Applying requireRole here blocks doctors from accidentally modifying data.
+router.use(requireRole("patient"));
 
 function buildErrorMessage(errorCode, message) {
   return { error: message, code: errorCode };

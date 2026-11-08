@@ -40,17 +40,13 @@ function Navbar() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userName = user.name || "User";
   const userInitial = userName.charAt(0).toUpperCase();
+  const isDoctor = user.role === "doctor";
 
   // Handle confirmation: purge session and redirect to Landing Page
   const confirmLogout = () => {
-    // 1. Clear session tokens and cached user data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
-    // 2. Close modal
     setShowLogoutModal(false);
-
-    // 3. Programmatically redirect to the public landing page ("/")
     navigate("/");
   };
 
@@ -66,19 +62,24 @@ function Navbar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showLogoutModal]);
 
-  const navItems = [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Readings", path: "/readings" },
-    { label: "Reports", path: "/reports" },
-    { label: "Profile", path: "/profile" },
-  ];
+  const navItems = isDoctor
+    ? [
+        { label: "Dashboard", path: "/doctor-dashboard" },
+        { label: "Profile", path: "/profile" },
+      ]
+    : [
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "Readings", path: "/readings" },
+        { label: "Reports", path: "/reports" },
+        { label: "Profile", path: "/profile" },
+      ];
 
   return (
     <>
       <header className="app-navbar">
         <div className="navbar-container">
           {/* Brand Logo & Title */}
-          <Link to="/dashboard" className="navbar-brand">
+          <Link to={isDoctor ? "/doctor-dashboard" : "/dashboard"} className="navbar-brand">
             <div className="brand-icon">🌸</div>
             <div className="brand-text">
               <span className="brand-name">Sweety</span>

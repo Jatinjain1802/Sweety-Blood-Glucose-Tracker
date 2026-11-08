@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import MyDoctor from "../components/MyDoctor";
 
 /**
  * Dashboard Page
@@ -242,6 +243,9 @@ function Dashboard() {
                         <span className="quick-link-arrow">→</span>
                     </Link>
                 </section>
+
+                {/* My Doctor Section — only for patients */}
+                <MyDoctor />
             </main>
         </div>
     );

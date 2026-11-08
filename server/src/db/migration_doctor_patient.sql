@@ -32,3 +32,4 @@ CREATE TABLE IF NOT EXISTS doctor_patient_requests (
 CREATE INDEX IF NOT EXISTS idx_dpr_doctor_id  ON doctor_patient_requests (doctor_id);
 CREATE INDEX IF NOT EXISTS idx_dpr_patient_id ON doctor_patient_requests (patient_id);
 CREATE INDEX IF NOT EXISTS idx_dpr_status     ON doctor_patient_requests (status);
+
