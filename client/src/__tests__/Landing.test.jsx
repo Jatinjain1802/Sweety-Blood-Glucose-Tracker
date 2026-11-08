@@ -55,7 +55,7 @@ describe("Landing Page Component", () => {
         expect(screen.getByText(/useful summaries/i)).toBeInTheDocument();
 
         // Check how it works steps
-        expect(screen.getByText(/create your account/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/create your account/i)[0]).toBeInTheDocument();
         expect(screen.getByText(/record your readings/i)).toBeInTheDocument();
         expect(screen.getByText(/review your progress/i)).toBeInTheDocument();
     });

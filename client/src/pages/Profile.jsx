@@ -30,6 +30,7 @@ import Navbar from "../components/Navbar";
  */
 function Profile() {
     const cachedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const [userRole, setUserRole] = useState(cachedUser.role || "patient");
 
     // Profile state
     const [name, setName] = useState(cachedUser.name || "");
@@ -74,6 +75,7 @@ function Profile() {
                     const u = response.data.user;
                     setName(u.name || "");
                     setEmail(u.email || "");
+                    setUserRole(u.role || "patient");
                     setCreatedAt(u.created_at ? new Date(u.created_at).toLocaleDateString() : "Member");
                     setTotalReadings(u.totalReadings || 0);
 
@@ -193,7 +195,9 @@ function Profile() {
                 <div className="page-header">
                     <div>
                         <div className="breadcrumbs">
-                            <Link to="/dashboard">Dashboard</Link>
+                            <Link to={userRole === "doctor" ? "/doctor-dashboard" : "/dashboard"}>
+                                Dashboard
+                            </Link>
                             <span>/</span>
                             <span className="current">User Profile</span>
                         </div>
@@ -215,8 +219,13 @@ function Profile() {
                             <p className="profile-email">✉️ {email}</p>
                             <div className="profile-badges">
                                 <span className="profile-badge badge-active">● Active Account</span>
+                                <span className={`profile-badge ${userRole === "doctor" ? "badge-records" : "badge-neutral"}`}>
+                                    {userRole === "doctor" ? "🩺 Doctor Account" : "👤 Patient Account"}
+                                </span>
                                 <span className="profile-badge badge-neutral">🗓️ Joined: {createdAt}</span>
-                                <span className="profile-badge badge-records">📊 {totalReadings} Logged Readings</span>
+                                {userRole === "patient" && (
+                                    <span className="profile-badge badge-records">📊 {totalReadings} Logged Readings</span>
+                                )}
                             </div>
                         </div>
                     </div>

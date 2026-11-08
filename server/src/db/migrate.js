@@ -5,6 +5,11 @@ const { query, close } = require("../config/db");
 async function runMigrations() {
   const schema = fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8");
   await query(schema);
+  const doctorPatientMigration = fs.readFileSync(
+    path.join(__dirname, "migration_doctor_patient.sql"),
+    "utf8",
+  );
+  await query(doctorPatientMigration);
   console.log("Database migrated successfully.");
 }
 

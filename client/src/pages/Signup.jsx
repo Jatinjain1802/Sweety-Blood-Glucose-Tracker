@@ -138,6 +138,12 @@ function Signup() {
                             Log in
                         </Link>
                     </p>
+                    <p style={{ marginTop: "0.5rem" }}>
+                        Healthcare professional?{" "}
+                        <Link to="/doctor-signup" className="auth-link">
+                            Doctor registration
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>

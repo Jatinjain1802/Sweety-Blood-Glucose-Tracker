@@ -3,16 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
 /**
- * DoctorSignup Page
- * -----------------
- * Allows healthcare professionals to register as doctors using a secret code.
+ * DoctorSignup Component
+ * ----------------------
+ * Allows healthcare professionals to securely register as doctors
+ * using the server-side authorized registration code.
  *
- * 🎓 React Concepts:
- * 1. Controlled Inputs: `value={form.name}` + `onChange` keeps React as the
- *    single source of truth for form data — no DOM queries needed.
- * 2. `useState` with an object: We store all form fields in one state object
- *    and use the spread operator `...prev` to update only the changed field.
- * 3. Conditional rendering: The error/success message is only shown when set.
+ * 🎓 Key Concepts:
+ * 1. Controlled forms: State holds current values, updating via handleChange.
+ * 2. Visual harmony: Uses the exact same auth-wrapper and card styling as patient signup.
+ * 3. Security: Role cannot be spoofed on client; backend validates secret key.
  */
 function DoctorSignup() {
   const navigate = useNavigate();
@@ -26,20 +25,17 @@ function DoctorSignup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Update a single field without touching others
-  // e.target.name maps to the `name` attribute on each <input>
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent browser's native form submission / page reload
+    e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
       const res = await api.post("/auth/doctor-signup", form);
-      // Store JWT and user info in localStorage (same pattern as patient login)
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       navigate("/doctor-dashboard");
@@ -51,13 +47,16 @@ function DoctorSignup() {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-wrapper">
+      <div className="auth-background-shape shape-1"></div>
+      <div className="auth-background-shape shape-2"></div>
+
       <div className="auth-card">
-        <div className="auth-brand">
-          <span className="auth-brand-icon">🩺</span>
+        <div className="auth-header">
+          <div className="brand-badge">🩺 Doctor Portal</div>
           <h1 className="auth-title">Doctor Registration</h1>
           <p className="auth-subtitle">
-            Register as a healthcare professional on Sweety
+            Register as a verified healthcare professional
           </p>
         </div>
 
@@ -68,17 +67,15 @@ function DoctorSignup() {
           </div>
         )}
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label className="form-label" htmlFor="name">
-              Full Name
-            </label>
+            <label htmlFor="name">Full Name (with Title)</label>
             <input
               id="name"
               name="name"
               type="text"
-              className="form-input"
-              placeholder="Dr. Firstname Lastname"
+              className="form-control"
+              placeholder="e.g. Dr. Priya Sharma"
               value={form.name}
               onChange={handleChange}
               required
@@ -86,14 +83,12 @@ function DoctorSignup() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="email">
-              Email Address
-            </label>
+            <label htmlFor="email">Professional Email</label>
             <input
               id="email"
               name="email"
               type="email"
-              className="form-input"
+              className="form-control"
               placeholder="doctor@hospital.com"
               value={form.email}
               onChange={handleChange}
@@ -102,14 +97,12 @@ function DoctorSignup() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              Password
-            </label>
+            <label htmlFor="password">Password</label>
             <input
               id="password"
               name="password"
               type="password"
-              className="form-input"
+              className="form-control"
               placeholder="At least 6 characters"
               value={form.password}
               onChange={handleChange}
@@ -118,45 +111,48 @@ function DoctorSignup() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="doctorSecret">
-              Doctor Registration Code
-            </label>
+            <label htmlFor="doctorSecret">Doctor Registration Code</label>
             <input
               id="doctorSecret"
               name="doctorSecret"
               type="password"
-              className="form-input"
-              placeholder="Provided by Sweety administration"
+              className="form-control"
+              placeholder="Enter authorized code"
               value={form.doctorSecret}
               onChange={handleChange}
               required
             />
-            <p className="form-hint">
-              This code is provided by the Sweety administration. Contact your
-              system administrator if you do not have one.
+            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "4px" }}>
+              Provided by Sweety Administration. Contact support if you need a code.
             </p>
           </div>
 
           <button
             type="submit"
-            className="btn-primary btn-full"
+            className="btn-primary btn-block"
             disabled={loading}
           >
-            {loading ? "Registering…" : "Register as Doctor"}
+            {loading ? (
+              <span className="btn-loading-content">
+                <span className="spinner-sm"></span> Registering...
+              </span>
+            ) : (
+              "Complete Doctor Registration"
+            )}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Already have an account?{" "}
+            Already registered?{" "}
             <Link to="/login" className="auth-link">
-              Sign in
+              Log in
             </Link>
           </p>
-          <p>
+          <p style={{ marginTop: "0.5rem" }}>
             Registering as a patient?{" "}
             <Link to="/signup" className="auth-link">
-              Patient sign up
+              Patient signup
             </Link>
           </p>
         </div>
@@ -166,4 +162,3 @@ function DoctorSignup() {
 }
 
 export default DoctorSignup;
-

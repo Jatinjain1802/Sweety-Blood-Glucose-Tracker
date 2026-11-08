@@ -42,7 +42,8 @@ function Login() {
             localStorage.setItem("token", response.data.token);
             localStorage.setItem("user", JSON.stringify(response.data.user));
 
-            navigate("/dashboard");
+            const targetRoute = response.data.user?.role === "doctor" ? "/doctor-dashboard" : "/dashboard";
+            navigate(targetRoute);
         } catch (err) {
             setError(err.response?.data?.error || "Login failed. Please try again.");
         } finally {
@@ -119,6 +120,12 @@ function Login() {
                         Don't have an account?{" "}
                         <Link to="/signup" className="auth-link">
                             Create an account
+                        </Link>
+                    </p>
+                    <p style={{ marginTop: "0.5rem" }}>
+                        Healthcare professional?{" "}
+                        <Link to="/doctor-signup" className="auth-link">
+                            Doctor registration
                         </Link>
                     </p>
                 </div>

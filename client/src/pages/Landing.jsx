@@ -25,7 +25,7 @@ function Landing() {
                     {/* Navigation Actions: Dynamic based on auth status */}
                     <div className="landing-nav-actions">
                         {isAuthenticated ? (
-                            <Link to="/dashboard" className="landing-button landing-button-small">
+                            <Link to={user.role === "doctor" ? "/doctor-dashboard" : "/dashboard"} className="landing-button landing-button-small">
                                 Dashboard ({userName}) <span aria-hidden="true">→</span>
                             </Link>
                         ) : (
@@ -65,7 +65,7 @@ function Landing() {
 
                             <div className="landing-hero-actions">
                                 {isAuthenticated ? (
-                                    <Link to="/dashboard" className="landing-button">
+                                    <Link to={user.role === "doctor" ? "/doctor-dashboard" : "/dashboard"} className="landing-button">
                                         Open your dashboard <span aria-hidden="true">→</span>
                                     </Link>
                                 ) : (

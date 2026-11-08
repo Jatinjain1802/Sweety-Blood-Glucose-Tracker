@@ -3031,3 +3031,542 @@ select {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   17. DOCTOR-PATIENT CONNECTION & DOCTOR DASHBOARD STYLES
+   ========================================================================== */
+
+/* --- Status Badges --- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.status-accepted {
+  background: var(--status-normal-bg);
+  color: var(--status-normal-text);
+  border: 1px solid var(--status-normal-border);
+}
+
+.status-rejected {
+  background: var(--status-high-bg);
+  color: var(--status-high-text);
+  border: 1px solid var(--status-high-border);
+}
+
+.status-revoked {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+/* --- Common Doctor Tabs Navigation --- */
+.doctor-tabs,
+.my-doctor-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--surface-border);
+  padding-bottom: 2px;
+  overflow-x: auto;
+}
+
+.doctor-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.doctor-tab:hover {
+  color: var(--primary);
+  background: var(--primary-subtle);
+}
+
+.doctor-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 700;
+  background: rgba(225, 29, 72, 0.04);
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* --- Button Variants for Actions --- */
+.btn-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-success:hover {
+  background: #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-back:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-subtle);
+  color: var(--primary);
+}
+
+/* --- Doctor Requests & Patient Cards --- */
+.doctor-requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.doctor-request-card,
+.doctor-patient-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition);
+}
+
+.doctor-request-card:hover,
+.doctor-patient-card:hover {
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.drc-header,
+.dpc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.drc-patient-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.drc-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  border: 2px solid var(--primary-border);
+  flex-shrink: 0;
+}
+
+.drc-avatar-accepted {
+  background: var(--status-normal-bg);
+  color: var(--status-normal-text);
+  border-color: var(--status-normal-border);
+}
+
+.drc-avatar-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 1.4rem;
+}
+
+.drc-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.drc-email {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.drc-date {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  margin-top: 2px;
+}
+
+.drc-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.drc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drc-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.drc-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.drc-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* --- Glucose Value Indicator Colors --- */
+.glucose-low {
+  color: #2563eb !important;
+}
+
+.glucose-normal {
+  color: #059669 !important;
+}
+
+.glucose-elevated {
+  color: #d97706 !important;
+}
+
+.glucose-high {
+  color: #dc2626 !important;
+}
+
+/* --- Patient Profile Detail (Doctor View) --- */
+.doctor-profile-section {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-back-row {
+  margin-bottom: 18px;
+}
+
+.patient-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--surface-border);
+  margin-bottom: 20px;
+}
+
+.profile-patient-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.profile-patient-email {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.profile-sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--surface-border);
+  padding-bottom: 8px;
+}
+
+.doctor-sub-tab {
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.doctor-sub-tab:hover {
+  background: var(--surface-muted);
+  color: var(--text-main);
+}
+
+.doctor-sub-tab.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.profile-tab-content {
+  margin-top: 16px;
+}
+
+.profile-meta-card {
+  margin-top: 24px;
+  background: var(--surface-muted);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+}
+
+.profile-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.meta-label {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.meta-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* --- Report Controls for Doctor View --- */
+.report-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.report-period-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.report-period-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.report-period-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.report-date-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-label-row {
+  margin-bottom: 16px;
+}
+
+.report-display-label {
+  display: inline-block;
+  font-weight: 700;
+  color: var(--text-main);
+  background: var(--primary-subtle);
+  border: 1px solid var(--primary-border);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+}
+
+/* --- Patient-facing My Doctor Section --- */
+.my-doctor-section {
+  margin-top: 36px;
+}
+
+.search-bar {
+  margin-bottom: 18px;
+}
+
+.doctor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doctor-find-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  transition: var(--transition);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.doctor-find-card:hover {
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-xs);
+}
+
+.dfc-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dfc-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dfc-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dfc-sent-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.dfc-accepted {
+  color: var(--status-normal-text);
+}
+
+.inline-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--surface-border);
+}
+
+.page-info {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
