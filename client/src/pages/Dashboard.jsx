@@ -235,6 +235,15 @@ function Dashboard() {
                         </div>
                         <span className="quick-link-arrow">→</span>
                     </Link>
+
+                    <Link to="/my-doctor" className="quick-link-card">
+                        <div className="quick-link-icon">🩺</div>
+                        <div className="quick-link-content">
+                            <h3>Connect with Doctor</h3>
+                            <p>Search doctors, request access, and manage medical consent.</p>
+                        </div>
+                        <span className="quick-link-arrow">→</span>
+                    </Link>
                 </section>
 
                 {/* My Doctor Section — only for patients */}

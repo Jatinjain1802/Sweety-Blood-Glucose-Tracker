@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import Readings from "./pages/Readings";
 import Reports from "./pages/Reports";
+import MyDoctorPage from "./pages/MyDoctorPage";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
@@ -82,6 +83,18 @@ function App() {
                 <Reports />
               </RoleRoute>
             }
+          />
+          <Route
+            path="/my-doctor"
+            element={
+              <RoleRoute requiredRole="patient">
+                <MyDoctorPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/doctor"
+            element={<Navigate to="/my-doctor" replace />}
           />
 
           {/* Doctor-only routes */}

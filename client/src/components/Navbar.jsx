@@ -71,6 +71,7 @@ function Navbar() {
         { label: "Dashboard", path: "/dashboard" },
         { label: "Readings", path: "/readings" },
         { label: "Reports", path: "/reports" },
+        { label: "My Doctor", path: "/my-doctor" },
         { label: "Profile", path: "/profile" },
       ];
 
