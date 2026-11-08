@@ -4,7 +4,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=sweety
 DB_USER=postgres
-DB_PASSWORD=heer@2405
+DB_PASSWORD=
 DB_SSL=false
 
 JWT_SECRET=replace_this_with_a_long_random_secret
