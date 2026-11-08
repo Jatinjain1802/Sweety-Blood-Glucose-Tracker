@@ -186,10 +186,10 @@ function DoctorDashboard() {
   const formatDate = (iso) =>
     iso
       ? new Date(iso).toLocaleDateString("en-US", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
       : "—";
 
   const getGlucoseBadgeClass = (val) => {
@@ -389,7 +389,7 @@ function DoctorDashboard() {
           <div className="welcome-info">
             <span className="welcome-pill">🩺 Doctor Care Portal</span>
             <h1 className="welcome-title">
-              Welcome, Dr. {user.name || "Doctor"}! <span className="wave">👋</span>
+              Welcome, {user.name || "Doctor"}! <span className="wave">👋</span>
             </h1>
             <p className="welcome-subtitle">
               Review consent-based patient requests and analyze longitudinal blood glucose records.
