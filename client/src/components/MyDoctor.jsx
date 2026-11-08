@@ -2,20 +2,24 @@ import { useState, useEffect } from "react";
 import api from "../api/axios";
 
 /**
- * MyDoctor Component
- * ------------------
- * Patient-facing section to find doctors, send requests, and manage access.
- * This is embedded in the patient Dashboard page, not a standalone page.
+ * ============================================================================
+ * 🩺 SWEETY — PATIENT "MY DOCTOR" PORTAL & CONSENT ACCESS MANAGER
+ * ============================================================================
  *
- * 🎓 React Concepts:
- * 1. Lifting state up: This component manages its own data and uses
- *    callbacks only when the parent needs to know about changes.
- * 2. Debouncing (manual): We refetch the doctor list when the search
- *    input value changes using `useEffect` with `[searchTerm]` as the dependency.
- * 3. Confirmation modal pattern: Before revoking access, we show an
- *    inline confirmation so the user can't accidentally revoke.
- * 4. Optimistic UI: When the user sends a request, we immediately update
- *    local state so the button changes — without waiting for a full refetch.
+ * 🎓 React & UI Architecture Concepts:
+ *
+ * 1. Controlled Search & Instant Filtering:
+ *    - Search input is controlled via `searchTerm` state.
+ *    - Debounced/triggered on change via `useEffect` with clean dependency tracking.
+ *
+ * 2. Consent Management & Safety Modals:
+ *    - Revoking access or cancelling pending requests is state-driven with
+ *      confirmation modals to prevent accidental medical record disconnects.
+ *
+ * 3. Dual Export (Default + Named):
+ *    - `export { MyDoctor }; export default MyDoctor;` ensures zero import mismatch
+ *      whether consumed as default or destructured import in Vite/React.
+ * ============================================================================
  */
 function MyDoctor() {
   // Active sub-section: 'find' | 'requests' | 'authorized'
@@ -26,7 +30,7 @@ function MyDoctor() {
   const [doctors, setDoctors] = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(false);
   const [doctorsError, setDoctorsError] = useState("");
-  const [sendingRequestTo, setSendingRequestTo] = useState(null); // doctorId being sent
+  const [sendingRequestTo, setSendingRequestTo] = useState(null);
   const [sendMsg, setSendMsg] = useState("");
   const [sendError, setSendError] = useState("");
 
@@ -41,69 +45,82 @@ function MyDoctor() {
   const [authorized, setAuthorized] = useState([]);
   const [authorizedLoading, setAuthorizedLoading] = useState(false);
   const [authorizedError, setAuthorizedError] = useState("");
-  const [revokeConfirm, setRevokeConfirm] = useState(null); // { requestId, doctorName }
+  const [revokeConfirm, setRevokeConfirm] = useState(null);
   const [revokeMsg, setRevokeMsg] = useState("");
 
   // ---------------------------------------------------------------------------
-  // Fetch doctors (re-runs when searchTerm changes)
+  // Synchronized Data Fetcher Effect with Unmount Cleanup
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (section !== "find") return;
-    setDoctorsLoading(true);
-    setDoctorsError("");
-    setSendMsg("");
-    setSendError("");
+    let isMounted = true;
 
-    const params = searchTerm ? { search: searchTerm } : {};
-    api
-      .get("/patient/doctors", { params })
-      .then((res) => setDoctors(res.data.doctors || []))
-      .catch((err) =>
-        setDoctorsError(err.response?.data?.error || "Unable to load doctors.")
-      )
-      .finally(() => setDoctorsLoading(false));
+    if (section === "find") {
+      const params = searchTerm ? { search: searchTerm } : {};
+      api
+        .get("/patient/doctors", { params })
+        .then((res) => {
+          if (isMounted) {
+            setDoctors(res.data.doctors || []);
+            setDoctorsError("");
+          }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            setDoctorsError(
+              err.response?.data?.error || "Unable to load doctors."
+            );
+          }
+        })
+        .finally(() => {
+          if (isMounted) setDoctorsLoading(false);
+        });
+    } else if (section === "requests") {
+      api
+        .get("/patient/requests")
+        .then((res) => {
+          if (isMounted) {
+            setRequests(res.data.requests || []);
+            setRequestsError("");
+          }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            setRequestsError(
+              err.response?.data?.error || "Unable to load your requests."
+            );
+          }
+        })
+        .finally(() => {
+          if (isMounted) setRequestsLoading(false);
+        });
+    } else if (section === "authorized") {
+      api
+        .get("/patient/authorized-doctors")
+        .then((res) => {
+          if (isMounted) {
+            setAuthorized(res.data.doctors || []);
+            setAuthorizedError("");
+          }
+        })
+        .catch((err) => {
+          if (isMounted) {
+            setAuthorizedError(
+              err.response?.data?.error || "Unable to load authorized doctors."
+            );
+          }
+        })
+        .finally(() => {
+          if (isMounted) setAuthorizedLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [section, searchTerm]);
 
   // ---------------------------------------------------------------------------
-  // Fetch outgoing requests
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (section !== "requests") return;
-    setRequestsLoading(true);
-    setRequestsError("");
-    setCancelMsg("");
-    api
-      .get("/patient/requests")
-      .then((res) => setRequests(res.data.requests || []))
-      .catch((err) =>
-        setRequestsError(
-          err.response?.data?.error || "Unable to load your requests."
-        )
-      )
-      .finally(() => setRequestsLoading(false));
-  }, [section]);
-
-  // ---------------------------------------------------------------------------
-  // Fetch authorized doctors
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (section !== "authorized") return;
-    setAuthorizedLoading(true);
-    setAuthorizedError("");
-    setRevokeMsg("");
-    api
-      .get("/patient/authorized-doctors")
-      .then((res) => setAuthorized(res.data.doctors || []))
-      .catch((err) =>
-        setAuthorizedError(
-          err.response?.data?.error || "Unable to load authorized doctors."
-        )
-      )
-      .finally(() => setAuthorizedLoading(false));
-  }, [section]);
-
-  // ---------------------------------------------------------------------------
-  // Send request to a doctor
+  // Actions
   // ---------------------------------------------------------------------------
   const handleSendRequest = async (doctorId) => {
     setSendingRequestTo(doctorId);
@@ -111,14 +128,16 @@ function MyDoctor() {
     setSendError("");
     try {
       const res = await api.post(`/patient/doctors/${doctorId}/request`);
-      setSendMsg(res.data.message);
-      // Optimistically update the doctor card's existingRequest state
+      setSendMsg(res.data.message || "Request sent successfully!");
       setDoctors((prev) =>
         prev.map((d) =>
           d.id === doctorId
             ? {
                 ...d,
-                existingRequest: { status: "pending", requestedAt: new Date().toISOString() },
+                existingRequest: {
+                  status: "pending",
+                  requestedAt: new Date().toISOString(),
+                },
               }
             : d
         )
@@ -130,15 +149,12 @@ function MyDoctor() {
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // Cancel a pending request
-  // ---------------------------------------------------------------------------
   const handleCancel = async (requestId) => {
     setCancellingId(requestId);
     setCancelMsg("");
     try {
       await api.delete(`/patient/requests/${requestId}`);
-      setCancelMsg("Request cancelled.");
+      setCancelMsg("Request cancelled successfully.");
       setRequests((prev) => prev.filter((r) => r.id !== requestId));
     } catch (err) {
       setCancelMsg(
@@ -149,9 +165,6 @@ function MyDoctor() {
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // Revoke access
-  // ---------------------------------------------------------------------------
   const handleRevoke = async () => {
     if (!revokeConfirm) return;
     try {
@@ -183,34 +196,31 @@ function MyDoctor() {
 
   const statusBadge = (status) => {
     const map = {
-      pending: { cls: "status-pending", label: "Pending" },
-      accepted: { cls: "status-accepted", label: "Accepted" },
-      rejected: { cls: "status-rejected", label: "Rejected" },
+      pending: { cls: "status-pending", label: "Pending Review" },
+      accepted: { cls: "status-accepted", label: "Access Active" },
+      rejected: { cls: "status-rejected", label: "Declined" },
       revoked: { cls: "status-revoked", label: "Revoked" },
     };
     const s = map[status] || { cls: "", label: status };
     return <span className={`status-badge ${s.cls}`}>{s.label}</span>;
   };
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
   return (
     <section className="card-section my-doctor-section">
       <div className="section-header">
         <div>
-          <h2 className="section-title">🩺 My Doctor</h2>
+          <h2 className="section-title">🩺 My Doctor & Healthcare Team</h2>
           <p className="section-subtitle">
-            Share your glucose records with your healthcare provider.
+            Authorize healthcare providers to securely review your blood glucose trends and reports.
           </p>
         </div>
       </div>
 
-      {/* Section navigation */}
+      {/* Navigation Tabs */}
       <div className="my-doctor-tabs">
         {[
-          { key: "find", label: "🔍 Find Doctors" },
-          { key: "requests", label: "📤 My Requests" },
+          { key: "find", label: "🔍 Find & Connect Doctors" },
+          { key: "requests", label: "📤 Outgoing Requests" },
           { key: "authorized", label: "✅ Authorized Doctors" },
         ].map((t) => (
           <button
@@ -223,7 +233,7 @@ function MyDoctor() {
         ))}
       </div>
 
-      {/* ===== FIND DOCTORS ===== */}
+      {/* ===== 1. FIND DOCTORS ===== */}
       {section === "find" && (
         <div>
           {/* Enhanced Search Header & Input */}
@@ -261,12 +271,12 @@ function MyDoctor() {
                   title="Clear search"
                   aria-label="Clear search"
                 >
-                  ✕
+                  &times;
                 </button>
               )}
             </div>
 
-            {/* Live Search Status & Quick Filter Chips */}
+            {/* Live Search Status */}
             <div className="search-meta-row">
               <span className="search-count-badge">
                 {doctorsLoading
@@ -304,7 +314,7 @@ function MyDoctor() {
           {doctorsLoading && (
             <div className="loading-container">
               <div className="spinner" />
-              <p className="loading-text">Searching doctors…</p>
+              <p className="loading-text">Loading registered doctors…</p>
             </div>
           )}
 
@@ -318,11 +328,11 @@ function MyDoctor() {
           {!doctorsLoading && !doctorsError && doctors.length === 0 && (
             <div className="empty-state">
               <div className="empty-icon">🏥</div>
-              <h3 className="empty-title">No doctors found</h3>
+              <h3 className="empty-title">No Doctors Found</h3>
               <p className="empty-desc">
                 {searchTerm
-                  ? "No doctors match your search. Try a different name or email."
-                  : "No registered doctors are available yet."}
+                  ? `No registered healthcare providers matched "${searchTerm}". Try a different name or email.`
+                  : "No registered doctors are available in the directory yet."}
               </p>
             </div>
           )}
@@ -331,7 +341,8 @@ function MyDoctor() {
             <div className="doctor-list">
               {doctors.map((doctor) => {
                 const req = doctor.existingRequest;
-                const canSend = !req || req.status === "rejected" || req.status === "revoked";
+                const canSend =
+                  !req || req.status === "rejected" || req.status === "revoked";
 
                 return (
                   <div className="doctor-find-card" key={doctor.id}>
@@ -341,12 +352,12 @@ function MyDoctor() {
                       </div>
                       <div>
                         <h3 className="drc-name">{doctor.name}</h3>
-                        <p className="drc-email">{doctor.email}</p>
+                        <p className="drc-email">✉️ {doctor.email}</p>
                         {req && (
                           <div className="dfc-status">
                             {statusBadge(req.status)}
                             <span className="drc-date">
-                              {formatDate(req.requestedAt)}
+                              📅 {formatDate(req.requestedAt)}
                             </span>
                           </div>
                         )}
@@ -360,16 +371,16 @@ function MyDoctor() {
                           disabled={sendingRequestTo === doctor.id}
                         >
                           {sendingRequestTo === doctor.id
-                            ? "Sending…"
+                            ? "Sending..."
                             : "Request Access"}
                         </button>
                       ) : req.status === "pending" ? (
                         <span className="dfc-sent-label">
-                          ⏳ Request sent
+                          ⏳ Request pending review
                         </span>
                       ) : req.status === "accepted" ? (
                         <span className="dfc-sent-label dfc-accepted">
-                          ✅ Access granted
+                          ✅ Active medical access
                         </span>
                       ) : null}
                     </div>
@@ -381,15 +392,17 @@ function MyDoctor() {
         </div>
       )}
 
-      {/* ===== MY REQUESTS ===== */}
+      {/* ===== 2. OUTGOING REQUESTS ===== */}
       {section === "requests" && (
         <div>
           {cancelMsg && (
             <div
-              className={`alert ${cancelMsg.startsWith("Failed") ? "alert-error" : "alert-success"}`}
+              className={`alert ${
+                cancelMsg.includes("cancelled") ? "alert-success" : "alert-error"
+              }`}
             >
               <span className="alert-icon">
-                {cancelMsg.startsWith("Failed") ? "⚠️" : "✅"}
+                {cancelMsg.includes("cancelled") ? "✅" : "⚠️"}
               </span>
               <span>{cancelMsg}</span>
             </div>
@@ -398,7 +411,7 @@ function MyDoctor() {
           {requestsLoading && (
             <div className="loading-container">
               <div className="spinner" />
-              <p className="loading-text">Loading your requests…</p>
+              <p className="loading-text">Loading your access requests…</p>
             </div>
           )}
 
@@ -412,16 +425,16 @@ function MyDoctor() {
           {!requestsLoading && !requestsError && requests.length === 0 && (
             <div className="empty-state">
               <div className="empty-icon">📤</div>
-              <h3 className="empty-title">No requests sent yet</h3>
+              <h3 className="empty-title">No Pending Requests</h3>
               <p className="empty-desc">
-                Use the{" "}
+                You have no active requests sent to doctors. Use the{" "}
                 <button
                   className="inline-link"
                   onClick={() => setSection("find")}
                 >
                   Find Doctors
                 </button>{" "}
-                tab to send your first access request.
+                tab to send your first clinical access request.
               </p>
             </div>
           )}
@@ -436,13 +449,13 @@ function MyDoctor() {
                     </div>
                     <div>
                       <h3 className="drc-name">{req.doctorName}</h3>
-                      <p className="drc-email">{req.doctorEmail}</p>
+                      <p className="drc-email">✉️ {req.doctorEmail}</p>
                       <p className="drc-date">
-                        Sent: {formatDate(req.requestedAt)}
+                        📅 Sent on: {formatDate(req.requestedAt)}
                       </p>
                       {req.respondedAt && (
                         <p className="drc-date">
-                          Responded: {formatDate(req.respondedAt)}
+                          ⚡ Responded: {formatDate(req.respondedAt)}
                         </p>
                       )}
                     </div>
@@ -455,7 +468,9 @@ function MyDoctor() {
                         onClick={() => handleCancel(req.id)}
                         disabled={cancellingId === req.id}
                       >
-                        {cancellingId === req.id ? "Cancelling…" : "Cancel"}
+                        {cancellingId === req.id
+                          ? "Cancelling..."
+                          : "Cancel Request"}
                       </button>
                     )}
                   </div>
@@ -466,12 +481,14 @@ function MyDoctor() {
         </div>
       )}
 
-      {/* ===== AUTHORIZED DOCTORS ===== */}
+      {/* ===== 3. AUTHORIZED DOCTORS ===== */}
       {section === "authorized" && (
         <div>
           {revokeMsg && (
             <div
-              className={`alert ${revokeMsg.includes("revoked") ? "alert-success" : "alert-error"}`}
+              className={`alert ${
+                revokeMsg.includes("revoked") ? "alert-success" : "alert-error"
+              }`}
             >
               <span className="alert-icon">
                 {revokeMsg.includes("revoked") ? "✅" : "⚠️"}
@@ -497,10 +514,10 @@ function MyDoctor() {
           {!authorizedLoading && !authorizedError && authorized.length === 0 && (
             <div className="empty-state">
               <div className="empty-icon">🔓</div>
-              <h3 className="empty-title">No authorized doctors</h3>
+              <h3 className="empty-title">No Authorized Doctors</h3>
               <p className="empty-desc">
-                You have not granted any doctor access to your records. When a
-                doctor accepts your request, they will appear here.
+                You have not granted any healthcare provider access to your records yet.
+                Once a doctor accepts your request, they will appear here and you can manage or revoke their access at any time.
               </p>
             </div>
           )}
@@ -515,14 +532,14 @@ function MyDoctor() {
                     </div>
                     <div>
                       <h3 className="drc-name">{doc.doctorName}</h3>
-                      <p className="drc-email">{doc.doctorEmail}</p>
+                      <p className="drc-email">✉️ {doc.doctorEmail}</p>
                       <p className="drc-date">
-                        Access since: {formatDate(doc.accessGrantedAt)}
+                        🛡️ Consent Granted: {formatDate(doc.accessGrantedAt)}
                       </p>
                     </div>
                   </div>
                   <div className="dfc-action">
-                    <span className="status-badge status-accepted">Active</span>
+                    <span className="status-badge status-accepted">● Active Care</span>
                     <button
                       className="btn-danger btn-sm"
                       onClick={() =>
@@ -561,11 +578,10 @@ function MyDoctor() {
                   <p>
                     Are you sure you want to revoke{" "}
                     <strong>Dr. {revokeConfirm.doctorName}</strong>
-                    &apos;s access to your glucose records?
+                    &apos;s access to your blood glucose records?
                   </p>
                   <p className="modal-subtext">
-                    They will immediately lose the ability to view your records.
-                    You can re-send a request later if needed.
+                    They will immediately lose access to your medical readings, reports, and charts. You can re-send a request at any time.
                   </p>
                 </div>
                 <div className="modal-footer">
@@ -588,5 +604,5 @@ function MyDoctor() {
   );
 }
 
+export { MyDoctor };
 export default MyDoctor;
-

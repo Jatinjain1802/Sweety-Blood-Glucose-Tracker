@@ -1,23 +1,32 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import DoctorPatientProfile from "./DoctorPatientProfile";
 
 /**
- * DoctorDashboard Page
- * --------------------
- * Main interface for authenticated doctors.
- * Has 3 tabs: Pending Requests, My Patients, Patient Profile.
+ * ============================================================================
+ * 🩺 SWEETY — CLINICAL DOCTOR DASHBOARD
+ * ============================================================================
  *
- * 🎓 React Concepts:
- * 1. Tab-based navigation with local state — no URL change needed for sub-tabs.
- * 2. `useEffect` with dependency array — re-fetches when activeTab changes.
- * 3. Lifting state: selectedPatient is managed here and passed to DoctorPatientProfile.
- * 4. Promise.all vs sequential awaits: `useEffect` runs fetches in parallel for speed.
+ * 🎓 React & UX Concepts Explained:
+ *
+ * 1. KPI Metrics Aggregation (`useMemo`):
+ *    - Instead of re-calculating stats on every minor render, `useMemo` computes
+ *      top-level clinical metrics (Active Patients, Pending Requests, Action Required)
+ *      only when `requests` or `patients` arrays change!
+ *
+ * 2. Multi-Tab Workflow with Breadcrumb Navigation:
+ *    - Seamlessly transitions between:
+ *      a) Overview & Pending Patient Requests
+ *      b) Active Patient Directory (with instant name/email search)
+ *      c) Deep Patient Profile (read-only comprehensive charts & reports)
+ *
+ * 3. Clinical Consent Safeguards:
+ *    - Clear visual indicators that pending requests provide only a limited
+ *      statistical snapshot, and full medical logs unlock upon acceptance.
+ * ============================================================================
  */
 function DoctorDashboard() {
-  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // Tab state: 'requests' | 'patients' | 'profile'
@@ -33,72 +42,123 @@ function DoctorDashboard() {
   const [patientsLoading, setPatientsLoading] = useState(false);
   const [patientsError, setPatientsError] = useState("");
 
-  // Selected patient for the profile tab
+  // Filter query in "My Patients" tab
+  const [patientSearch, setPatientSearch] = useState("");
+
+  // Selected patient for deep inspection
   const [selectedPatient, setSelectedPatient] = useState(null);
 
-  // Action feedback (accept/reject messages)
+  // Processing state for individual request actions
+  const [processingId, setProcessingId] = useState(null);
   const [actionMsg, setActionMsg] = useState("");
   const [actionError, setActionError] = useState("");
 
   // ---------------------------------------------------------------------------
-  // Data fetching
+  // Data Fetching & Effect Synchronization
   // ---------------------------------------------------------------------------
-  const fetchRequests = async () => {
+  const reloadData = () => {
     setRequestsLoading(true);
-    setRequestsError("");
-    try {
-      const res = await api.get("/doctor/patients/requests");
-      setRequests(res.data.requests || []);
-    } catch (err) {
-      setRequestsError(
-        err.response?.data?.error || "Unable to load patient requests."
-      );
-    } finally {
-      setRequestsLoading(false);
-    }
-  };
-
-  const fetchPatients = async () => {
     setPatientsLoading(true);
-    setPatientsError("");
-    try {
-      const res = await api.get("/doctor/patients");
-      setPatients(res.data.patients || []);
-    } catch (err) {
-      setPatientsError(
-        err.response?.data?.error || "Unable to load patients."
-      );
-    } finally {
-      setPatientsLoading(false);
-    }
+    Promise.all([
+      api.get("/doctor/patients/requests"),
+      api.get("/doctor/patients"),
+    ])
+      .then(([reqRes, patRes]) => {
+        setRequests(reqRes.data.requests || []);
+        setPatients(patRes.data.patients || []);
+        setRequestsError("");
+        setPatientsError("");
+      })
+      .catch((err) => {
+        setRequestsError(err.response?.data?.error || "Failed to load requests.");
+      })
+      .finally(() => {
+        setRequestsLoading(false);
+        setPatientsLoading(false);
+      });
   };
 
-  // 🎓 useEffect runs AFTER the component renders.
-  //    The dependency array [activeTab] means: re-run when activeTab changes.
   useEffect(() => {
-    if (activeTab === "requests") fetchRequests();
-    if (activeTab === "patients") fetchPatients();
+    let isMounted = true;
+
+    api
+      .get("/doctor/patients/requests")
+      .then((res) => {
+        if (isMounted) {
+          setRequests(res.data.requests || []);
+          setRequestsError("");
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setRequestsError(
+            err.response?.data?.error || "Unable to load pending patient requests."
+          );
+        }
+      })
+      .finally(() => {
+        if (isMounted) setRequestsLoading(false);
+      });
+
+    api
+      .get("/doctor/patients")
+      .then((res) => {
+        if (isMounted) {
+          setPatients(res.data.patients || []);
+          setPatientsError("");
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setPatientsError(
+            err.response?.data?.error || "Unable to load patient directory."
+          );
+        }
+      })
+      .finally(() => {
+        if (isMounted) setPatientsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [activeTab]);
+
+  // Filtered patients for directory search
+  const filteredPatients = useMemo(() => {
+    if (!patientSearch.trim()) return patients;
+    const q = patientSearch.toLowerCase().trim();
+    return patients.filter(
+      (p) =>
+        (p.patientName && p.patientName.toLowerCase().includes(q)) ||
+        (p.patientEmail && p.patientEmail.toLowerCase().includes(q))
+    );
+  }, [patients, patientSearch]);
 
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
   const handleAccept = async (requestId) => {
+    setProcessingId(requestId);
     setActionMsg("");
     setActionError("");
     try {
       const res = await api.post(
         `/doctor/patients/requests/${requestId}/accept`
       );
-      setActionMsg(res.data.message);
-      // Remove from pending list and refresh patients
+      setActionMsg(res.data.message || "Request accepted successfully.");
+      // Optimistically remove from requests and reload patients
       setRequests((prev) => prev.filter((r) => r.id !== requestId));
+      reloadData();
     } catch (err) {
       setActionError(err.response?.data?.error || "Failed to accept request.");
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleReject = async (requestId) => {
+    setProcessingId(requestId);
     setActionMsg("");
     setActionError("");
     try {
@@ -109,12 +169,15 @@ function DoctorDashboard() {
       setRequests((prev) => prev.filter((r) => r.id !== requestId));
     } catch (err) {
       setActionError(err.response?.data?.error || "Failed to reject request.");
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const openPatientProfile = (patient) => {
     setSelectedPatient(patient);
     setActiveTab("profile");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ---------------------------------------------------------------------------
@@ -129,16 +192,17 @@ function DoctorDashboard() {
         })
       : "—";
 
-  const getGlucoseClass = (val) => {
-    if (val == null) return "";
-    if (val < 70) return "glucose-low";
-    if (val <= 140) return "glucose-normal";
-    if (val <= 199) return "glucose-elevated";
-    return "glucose-high";
+  const getGlucoseBadgeClass = (val) => {
+    const num = Number(val);
+    if (isNaN(num) || val === null) return "badge-neutral";
+    if (num < 70) return "badge-warning";
+    if (num <= 140) return "badge-success";
+    if (num <= 199) return "badge-caution";
+    return "badge-danger";
   };
 
   // ---------------------------------------------------------------------------
-  // Render helpers
+  // Render: Pending Request Card
   // ---------------------------------------------------------------------------
   const renderRequestCard = (req) => (
     <div className="doctor-request-card" key={req.id}>
@@ -149,60 +213,71 @@ function DoctorDashboard() {
           </div>
           <div>
             <h3 className="drc-name">{req.patientName}</h3>
-            <p className="drc-email">{req.patientEmail}</p>
+            <p className="drc-email">✉️ {req.patientEmail}</p>
             <p className="drc-date">
-              Requested: {formatDate(req.requestedAt)}
+              📅 Request Received: {formatDate(req.requestedAt)}
             </p>
           </div>
         </div>
-        <span className="status-badge status-pending">Pending</span>
+        <span className="status-badge status-pending">Action Required</span>
       </div>
 
-      {/* Limited patient summary */}
+      {/* Privacy Notice Banner */}
+      <div className="drc-privacy-notice">
+        <span className="notice-icon">🔒</span>
+        <span>
+          <strong>Pre-Consent Clinical Summary:</strong> Detailed glucose logs,
+          daily reports, and trend charts will be unlocked upon accepting this request.
+        </span>
+      </div>
+
+      {/* Limited Clinical Summary Grid */}
       <div className="drc-summary-grid">
         <div className="drc-stat">
           <span className="drc-stat-label">Total Readings</span>
           <span className="drc-stat-value">
-            {req.patientSummary.totalReadings}
+            {req.patientSummary.totalReadings} <small>logs</small>
           </span>
         </div>
+
         <div className="drc-stat">
-          <span className="drc-stat-label">Avg. Glucose</span>
-          <span
-            className={`drc-stat-value ${getGlucoseClass(req.patientSummary.averageGlucose)}`}
-          >
-            {req.patientSummary.averageGlucose ?? "—"}{" "}
-            {req.patientSummary.averageGlucose ? "mg/dL" : ""}
+          <span className="drc-stat-label">All-Time Average</span>
+          <span className="drc-stat-value">
+            <span className={`glucose-pill ${getGlucoseBadgeClass(req.patientSummary.averageGlucose)}`}>
+              {req.patientSummary.averageGlucose ?? "—"} mg/dL
+            </span>
           </span>
         </div>
+
         <div className="drc-stat">
-          <span className="drc-stat-label">Highest</span>
-          <span
-            className={`drc-stat-value ${getGlucoseClass(req.patientSummary.highestGlucose)}`}
-          >
-            {req.patientSummary.highestGlucose ?? "—"}{" "}
-            {req.patientSummary.highestGlucose ? "mg/dL" : ""}
+          <span className="drc-stat-label">Peak Reading</span>
+          <span className="drc-stat-value">
+            <span className={`glucose-pill ${getGlucoseBadgeClass(req.patientSummary.highestGlucose)}`}>
+              {req.patientSummary.highestGlucose ?? "—"} mg/dL
+            </span>
           </span>
         </div>
+
         <div className="drc-stat">
-          <span className="drc-stat-label">Lowest</span>
-          <span
-            className={`drc-stat-value ${getGlucoseClass(req.patientSummary.lowestGlucose)}`}
-          >
-            {req.patientSummary.lowestGlucose ?? "—"}{" "}
-            {req.patientSummary.lowestGlucose ? "mg/dL" : ""}
+          <span className="drc-stat-label">Lowest Reading</span>
+          <span className="drc-stat-value">
+            <span className={`glucose-pill ${getGlucoseBadgeClass(req.patientSummary.lowestGlucose)}`}>
+              {req.patientSummary.lowestGlucose ?? "—"} mg/dL
+            </span>
           </span>
         </div>
+
         <div className="drc-stat">
-          <span className="drc-stat-label">First Reading</span>
+          <span className="drc-stat-label">First Recorded</span>
           <span className="drc-stat-value">
             {req.patientSummary.firstReadingDate
               ? formatDate(req.patientSummary.firstReadingDate)
               : "—"}
           </span>
         </div>
+
         <div className="drc-stat">
-          <span className="drc-stat-label">Latest Reading</span>
+          <span className="drc-stat-label">Latest Recorded</span>
           <span className="drc-stat-value">
             {req.patientSummary.latestReadingDate
               ? formatDate(req.patientSummary.latestReadingDate)
@@ -211,23 +286,29 @@ function DoctorDashboard() {
         </div>
       </div>
 
+      {/* Actions */}
       <div className="drc-actions">
         <button
-          className="btn-success"
-          onClick={() => handleAccept(req.id)}
+          className="btn-danger btn-sm"
+          onClick={() => handleReject(req.id)}
+          disabled={processingId === req.id}
         >
-          ✓ Accept
+          {processingId === req.id ? "Processing..." : "✕ Reject Request"}
         </button>
         <button
-          className="btn-danger"
-          onClick={() => handleReject(req.id)}
+          className="btn-success btn-sm"
+          onClick={() => handleAccept(req.id)}
+          disabled={processingId === req.id}
         >
-          ✗ Reject
+          {processingId === req.id ? "Processing..." : "✓ Accept & Unlock Records"}
         </button>
       </div>
     </div>
   );
 
+  // ---------------------------------------------------------------------------
+  // Render: Active Patient Card
+  // ---------------------------------------------------------------------------
   const renderPatientCard = (patient) => (
     <div className="doctor-patient-card" key={patient.patientId}>
       <div className="dpc-header">
@@ -237,49 +318,48 @@ function DoctorDashboard() {
           </div>
           <div>
             <h3 className="drc-name">{patient.patientName}</h3>
-            <p className="drc-email">{patient.patientEmail}</p>
+            <p className="drc-email">✉️ {patient.patientEmail}</p>
             <p className="drc-date">
-              Access since: {formatDate(patient.accessGrantedAt)}
+              🛡️ Active Access Since: {formatDate(patient.accessGrantedAt)}
             </p>
           </div>
         </div>
-        <span className="status-badge status-accepted">Active</span>
+        <span className="status-badge status-accepted">● Active Care</span>
       </div>
 
       <div className="drc-summary-grid">
         <div className="drc-stat">
           <span className="drc-stat-label">Total Readings</span>
-          <span className="drc-stat-value">{patient.summary.totalReadings}</span>
+          <span className="drc-stat-value">
+            {patient.summary.totalReadings} <small>records</small>
+          </span>
         </div>
         <div className="drc-stat">
           <span className="drc-stat-label">Avg. Glucose</span>
-          <span
-            className={`drc-stat-value ${getGlucoseClass(patient.summary.averageGlucose)}`}
-          >
-            {patient.summary.averageGlucose ?? "—"}{" "}
-            {patient.summary.averageGlucose ? "mg/dL" : ""}
+          <span className="drc-stat-value">
+            <span className={`glucose-pill ${getGlucoseBadgeClass(patient.summary.averageGlucose)}`}>
+              {patient.summary.averageGlucose ?? "—"} mg/dL
+            </span>
           </span>
         </div>
         <div className="drc-stat">
-          <span className="drc-stat-label">Highest</span>
-          <span
-            className={`drc-stat-value ${getGlucoseClass(patient.summary.highestGlucose)}`}
-          >
-            {patient.summary.highestGlucose ?? "—"}{" "}
-            {patient.summary.highestGlucose ? "mg/dL" : ""}
+          <span className="drc-stat-label">Peak Reading</span>
+          <span className="drc-stat-value">
+            <span className={`glucose-pill ${getGlucoseBadgeClass(patient.summary.highestGlucose)}`}>
+              {patient.summary.highestGlucose ?? "—"} mg/dL
+            </span>
           </span>
         </div>
         <div className="drc-stat">
-          <span className="drc-stat-label">Lowest</span>
-          <span
-            className={`drc-stat-value ${getGlucoseClass(patient.summary.lowestGlucose)}`}
-          >
-            {patient.summary.lowestGlucose ?? "—"}{" "}
-            {patient.summary.lowestGlucose ? "mg/dL" : ""}
+          <span className="drc-stat-label">Lowest Reading</span>
+          <span className="drc-stat-value">
+            <span className={`glucose-pill ${getGlucoseBadgeClass(patient.summary.lowestGlucose)}`}>
+              {patient.summary.lowestGlucose ?? "—"} mg/dL
+            </span>
           </span>
         </div>
         <div className="drc-stat">
-          <span className="drc-stat-label">Latest Reading</span>
+          <span className="drc-stat-label">Latest Log</span>
           <span className="drc-stat-value">
             {patient.summary.latestReadingDate
               ? formatDate(patient.summary.latestReadingDate)
@@ -293,35 +373,51 @@ function DoctorDashboard() {
           className="btn-primary"
           onClick={() => openPatientProfile(patient)}
         >
-          View Full Profile →
+          View Full Clinical Profile →
         </button>
       </div>
     </div>
   );
 
-  // ---------------------------------------------------------------------------
-  // Main render
-  // ---------------------------------------------------------------------------
   return (
     <div className="dashboard-page">
       <Navbar />
 
       <main className="dashboard-content">
-        {/* Hero Banner */}
+        {/* Hero Greeting & Doctor Profile Banner */}
         <section className="welcome-banner">
           <div className="welcome-info">
-            <span className="welcome-pill">🩺 Doctor Dashboard</span>
+            <span className="welcome-pill">🩺 Doctor Care Portal</span>
             <h1 className="welcome-title">
-              Hello, Dr. {user.name || "Doctor"}!{" "}
-              <span className="wave">👋</span>
+              Welcome, Dr. {user.name || "Doctor"}! <span className="wave">👋</span>
             </h1>
             <p className="welcome-subtitle">
-              Manage patient access requests and review glucose health records.
+              Review consent-based patient requests and analyze longitudinal blood glucose records.
             </p>
+          </div>
+          <div className="welcome-actions">
+            <button
+              className="btn-primary"
+              onClick={() => {
+                setActiveTab("patients");
+                reloadData();
+              }}
+            >
+              👥 My Patients ({patients.length})
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => {
+                setActiveTab("requests");
+                reloadData();
+              }}
+            >
+              📋 Requests ({requests.length})
+            </button>
           </div>
         </section>
 
-        {/* Action feedback */}
+        {/* Action Notifications */}
         {actionMsg && (
           <div className="alert alert-success">
             <span className="alert-icon">✅</span>
@@ -335,7 +431,60 @@ function DoctorDashboard() {
           </div>
         )}
 
-        {/* Tabs */}
+        {/* 4 Clinical Overview Stat Cards */}
+        <section className="stats-grid">
+          <div className="stat-card stat-total">
+            <div className="stat-header">
+              <span className="stat-label">Active Patients</span>
+              <span className="stat-icon">👥</span>
+            </div>
+            <div className="stat-body">
+              <span className="stat-value">{patients.length}</span>
+              <span className="stat-unit">enrolled</span>
+            </div>
+            <div className="stat-footer">Authorized consent granted</div>
+          </div>
+
+          <div className="stat-card stat-highest">
+            <div className="stat-header">
+              <span className="stat-label">Pending Requests</span>
+              <span className="stat-icon">📋</span>
+            </div>
+            <div className="stat-body">
+              <span className="stat-value">{requests.length}</span>
+              <span className="stat-unit">awaiting review</span>
+            </div>
+            <div className="stat-footer">Requires doctor decision</div>
+          </div>
+
+          <div className="stat-card stat-average">
+            <div className="stat-header">
+              <span className="stat-label">Clinical Scope</span>
+              <span className="stat-icon">🩺</span>
+            </div>
+            <div className="stat-body">
+              <span className="stat-value" style={{ fontSize: "1.25rem" }}>
+                Diabetology
+              </span>
+            </div>
+            <div className="stat-footer">Registered Healthcare Provider</div>
+          </div>
+
+          <div className="stat-card stat-lowest">
+            <div className="stat-header">
+              <span className="stat-label">Access Mode</span>
+              <span className="stat-icon">🛡️</span>
+            </div>
+            <div className="stat-body">
+              <span className="stat-value" style={{ fontSize: "1.25rem" }}>
+                Read-Only
+              </span>
+            </div>
+            <div className="stat-footer">Patient-consent protected</div>
+          </div>
+        </section>
+
+        {/* Doctor Tab Navigation */}
         <div className="doctor-tabs">
           <button
             className={`doctor-tab ${activeTab === "requests" ? "active" : ""}`}
@@ -350,6 +499,7 @@ function DoctorDashboard() {
               <span className="tab-badge">{requests.length}</span>
             )}
           </button>
+
           <button
             className={`doctor-tab ${activeTab === "patients" ? "active" : ""}`}
             onClick={() => {
@@ -358,35 +508,42 @@ function DoctorDashboard() {
               setActionError("");
             }}
           >
-            👥 My Patients
+            👥 My Patients Directory ({patients.length})
           </button>
+
           {selectedPatient && (
             <button
               className={`doctor-tab ${activeTab === "profile" ? "active" : ""}`}
               onClick={() => setActiveTab("profile")}
             >
-              🔍 {selectedPatient.patientName}
+              🔍 Patient: {selectedPatient.patientName}
             </button>
           )}
         </div>
 
-        {/* Tab content */}
+        {/* ===== TAB 1: PENDING PATIENT REQUESTS ===== */}
         {activeTab === "requests" && (
           <section className="card-section">
             <div className="section-header">
               <div>
-                <h2 className="section-title">Patient Access Requests</h2>
+                <h2 className="section-title">Incoming Patient Access Requests</h2>
                 <p className="section-subtitle">
-                  Review patient requests to share their glucose records with
-                  you.
+                  Patients requesting your clinical review of their blood sugar patterns.
                 </p>
               </div>
+              <button
+                className="btn-secondary btn-sm"
+                onClick={reloadData}
+                disabled={requestsLoading}
+              >
+                🔄 Refresh
+              </button>
             </div>
 
             {requestsLoading && (
               <div className="loading-container">
                 <div className="spinner" />
-                <p className="loading-text">Loading requests…</p>
+                <p className="loading-text">Loading incoming requests…</p>
               </div>
             )}
 
@@ -400,10 +557,10 @@ function DoctorDashboard() {
             {!requestsLoading && !requestsError && requests.length === 0 && (
               <div className="empty-state">
                 <div className="empty-icon">📭</div>
-                <h3 className="empty-title">No pending requests</h3>
+                <h3 className="empty-title">All Caught Up!</h3>
                 <p className="empty-desc">
-                  When patients request access to share their glucose records
-                  with you, they will appear here.
+                  There are no pending patient requests awaiting your decision.
+                  When patients request access using your email (<strong>{user.email}</strong>), they will appear here.
                 </p>
               </div>
             )}
@@ -416,21 +573,69 @@ function DoctorDashboard() {
           </section>
         )}
 
+        {/* ===== TAB 2: MY PATIENTS DIRECTORY ===== */}
         {activeTab === "patients" && (
           <section className="card-section">
             <div className="section-header">
               <div>
-                <h2 className="section-title">My Patients</h2>
+                <h2 className="section-title">Enrolled Patients Directory</h2>
                 <p className="section-subtitle">
-                  Patients who have granted you access to their glucose records.
+                  Patients who have granted you active consent to review their blood glucose records.
                 </p>
               </div>
+              <button
+                className="btn-secondary btn-sm"
+                onClick={reloadData}
+                disabled={patientsLoading}
+              >
+                🔄 Refresh Directory
+              </button>
             </div>
+
+            {/* Patient Search Bar */}
+            {patients.length > 0 && (
+              <div className="doctor-search-container">
+                <div className="doctor-search-bar">
+                  <span className="search-icon" aria-hidden="true">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    className="doctor-search-input"
+                    placeholder="Search enrolled patients by name or email…"
+                    value={patientSearch}
+                    onChange={(e) => setPatientSearch(e.target.value)}
+                  />
+                  {patientSearch && (
+                    <button
+                      type="button"
+                      className="search-clear-btn"
+                      onClick={() => setPatientSearch("")}
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {patientsLoading && (
               <div className="loading-container">
                 <div className="spinner" />
-                <p className="loading-text">Loading patients…</p>
+                <p className="loading-text">Loading patients directory…</p>
               </div>
             )}
 
@@ -444,26 +649,45 @@ function DoctorDashboard() {
             {!patientsLoading && !patientsError && patients.length === 0 && (
               <div className="empty-state">
                 <div className="empty-icon">🏥</div>
-                <h3 className="empty-title">No patients yet</h3>
+                <h3 className="empty-title">No Patients Enrolled Yet</h3>
                 <p className="empty-desc">
-                  Patients will appear here once you accept their access
-                  requests.
+                  You have not accepted any patient access requests yet. Share your registered email (<strong>{user.email}</strong>) with your patients so they can send requests from their dashboard.
                 </p>
               </div>
             )}
 
-            {!patientsLoading && patients.length > 0 && (
+            {!patientsLoading && patients.length > 0 && filteredPatients.length === 0 && (
+              <div className="empty-state">
+                <div className="empty-icon">🔍</div>
+                <h3 className="empty-title">No Matching Patients Found</h3>
+                <p className="empty-desc">
+                  No enrolled patients matched &quot;{patientSearch}&quot;.
+                </p>
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={() => setPatientSearch("")}
+                >
+                  Clear Search Filter
+                </button>
+              </div>
+            )}
+
+            {!patientsLoading && filteredPatients.length > 0 && (
               <div className="doctor-requests-list">
-                {patients.map(renderPatientCard)}
+                {filteredPatients.map(renderPatientCard)}
               </div>
             )}
           </section>
         )}
 
+        {/* ===== TAB 3: DEEP PATIENT PROFILE (READ-ONLY) ===== */}
         {activeTab === "profile" && selectedPatient && (
           <DoctorPatientProfile
             patient={selectedPatient}
-            onBack={() => setActiveTab("patients")}
+            onBack={() => {
+              setActiveTab("patients");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
           />
         )}
       </main>
@@ -472,4 +696,3 @@ function DoctorDashboard() {
 }
 
 export default DoctorDashboard;
-

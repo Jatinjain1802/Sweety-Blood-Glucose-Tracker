@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import MyDoctor from "../components/MyDoctor";
@@ -15,7 +15,6 @@ import MyDoctor from "../components/MyDoctor";
  * 3. Conditional Rendering: Rendering loading spinners or empty-state cards.
  */
 function Dashboard() {
-    const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
     const [report, setReport] = useState(null);
@@ -54,12 +53,6 @@ function Dashboard() {
 
         fetchDashboard();
     }, [today]);
-
-    const logout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate("/");
-    };
 
     if (loading) {
         return (
