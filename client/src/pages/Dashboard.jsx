@@ -57,7 +57,7 @@ function Dashboard() {
     const logout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        navigate("/login");
+        navigate("/");
     };
 
     if (loading) {

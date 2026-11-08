@@ -1,38 +1,4 @@
 import { Link } from "react-router-dom";
-
-/**
- * ============================================================================
- * 🌸 SWEETY — LANDING PAGE COMPONENT
- * ============================================================================
- *
- * 🎓 React & JavaScript Concepts Explained:
- *
- * 1. Client-Side Routing (<Link> vs <a>):
- *    - In Single Page Applications (SPAs), traditional anchor tags (<a href="/signup">)
- *      trigger a full page reload from the server, losing JavaScript state.
- *    - React Router's <Link to="/signup"> intercepts the click, pushes a new entry
- *      to browser history, and re-renders components client-side instantly.
- *    - However, for on-page anchor navigation (e.g., <a href="#features">), native <a>
- *      is preferred because browser engines natively smooth-scroll to IDs without
- *      interfering with router paths.
- *
- * 2. Adaptive User Session Awareness (localStorage):
- *    - By checking localStorage.getItem("token"), the landing page dynamically
- *      recognizes whether the user is an active logged-in member or a new visitor.
- *    - If authenticated, buttons adaptively switch to "Go to Dashboard →", delivering
- *      a seamless, personalized UX!
- *
- * 3. Semantic HTML & Accessibility (a11y):
- *    - <header>, <main>, <section>, <article>, and <footer> give structure to assistive
- *      technologies like screen readers and search engine crawlers (SEO).
- *    - aria-hidden="true" hides purely decorative elements (arrows, checkmarks) from
- *      screen readers to avoid auditory clutter.
- *
- * 4. Responsive Vector Art (<svg> viewBox & Path Commands):
- *    - The preview chart uses an inline SVG with Bézier curves (C and S path commands)
- *      and gradient fills, rendering crisp at any resolution without heavy chart libraries.
- * ============================================================================
- */
 function Landing() {
     // Check if the user is already authenticated
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
