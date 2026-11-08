@@ -7,6 +7,8 @@ dotenv.config();
 const authRoutes = require("./routes/auth");
 const readingsRoutes = require("./routes/readings");
 const reportsRoutes = require("./routes/reports");
+const doctorRoutes = require("./routes/doctor");
+const patientRoutes = require("./routes/patient");
 const { authMiddleware } = require("./middleware/auth");
 const { initializeDatabase } = require("./config/db");
 
@@ -24,8 +26,14 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+
+// Protected routes — authMiddleware verifies JWT and attaches req.user (with role)
 app.use("/api/readings", authMiddleware, readingsRoutes);
 app.use("/api/reports", authMiddleware, reportsRoutes);
+
+// Role-restricted routes — requireRole check is applied inside each router
+app.use("/api/doctor", authMiddleware, doctorRoutes);
+app.use("/api/patient", authMiddleware, patientRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

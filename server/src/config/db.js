@@ -27,12 +27,20 @@ const schemaSql = fs.readFileSync(
   "utf8",
 );
 
+const migrationDoctorPatientSql = fs.readFileSync(
+  path.join(__dirname, "..", "db", "migration_doctor_patient.sql"),
+  "utf8",
+);
+
 async function query(text, params) {
   return pool.query(text, params);
 }
 
 async function initializeDatabase() {
+  // Run base schema first (users + readings)
   await pool.query(schemaSql);
+  // Run doctor-patient migration (adds role column + requests table)
+  await pool.query(migrationDoctorPatientSql);
 }
 
 async function close() {
