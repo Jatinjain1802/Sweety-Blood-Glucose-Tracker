@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 function Landing() {
     // Check if the user is already authenticated
@@ -12,13 +13,14 @@ function Landing() {
             <header className="landing-nav">
                 <div className="landing-nav-inner">
                     <Link to="/" className="landing-brand" aria-label="Sweety Home">
-                        <span className="landing-brand-mark" aria-hidden="true">🌸</span>
+
                         <span>Sweety</span>
                     </Link>
 
                     {/* On-page section jump links */}
                     <nav className="landing-nav-links" aria-label="Main Navigation">
                         <a href="#features">Features</a>
+                        <a href="#doctor-care">For doctors</a>
                         <a href="#how-it-works">How it works</a>
                     </nav>
 
@@ -229,6 +231,84 @@ function Landing() {
                     </div>
                 </section>
 
+                {/* Doctor–Patient Collaboration Section */}
+                <section className="landing-doctor" id="doctor-care">
+                    <div className="landing-doctor-inner">
+                        <div className="landing-doctor-copy">
+                            <span className="landing-section-kicker">CARE THAT CONNECTS</span>
+                            <h2>Keep patients and doctors on the same page.</h2>
+                            <p>
+                                Sweety is designed to support consent-based collaboration.
+                                Patients stay in control of their records while doctors can
+                                review progress when access has been approved.
+                            </p>
+                            <div className="landing-doctor-benefits">
+                                <div className="landing-doctor-benefit">
+                                    <span aria-hidden="true">✓</span>
+                                    <div>
+                                        <strong>Patient-controlled access</strong>
+                                        <p>Patients choose which doctor can view their glucose records.</p>
+                                    </div>
+                                </div>
+                                <div className="landing-doctor-benefit">
+                                    <span aria-hidden="true">✓</span>
+                                    <div>
+                                        <strong>Review before approval</strong>
+                                        <p>Doctors can see a limited patient overview while a request is pending.</p>
+                                    </div>
+                                </div>
+                                <div className="landing-doctor-benefit">
+                                    <span aria-hidden="true">✓</span>
+                                    <div>
+                                        <strong>Read-only health history</strong>
+                                        <p>After approval, doctors can review readings, charts and reports without changing patient entries.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="landing-doctor-visual" aria-label="Illustration of the doctor and patient access workflow">
+                            <div className="landing-doctor-visual-heading">
+                                <span className="landing-doctor-icon" aria-hidden="true">＋</span>
+                                <div>
+                                    <strong>Shared care, with permission</strong>
+                                    <small>A simple, transparent process</small>
+                                </div>
+                                <span className="landing-doctor-secure" aria-label="Consent based">✓</span>
+                            </div>
+                            <div className="landing-doctor-flow">
+                                <div className="landing-doctor-flow-step">
+                                    <span className="landing-doctor-step-number">01</span>
+                                    <div>
+                                        <strong>Patient sends a request</strong>
+                                        <small>Choose a doctor and request access.</small>
+                                    </div>
+                                    <span className="landing-doctor-step-icon" aria-hidden="true">↗</span>
+                                </div>
+                                <div className="landing-doctor-flow-step">
+                                    <span className="landing-doctor-step-number">02</span>
+                                    <div>
+                                        <strong>Doctor reviews the request</strong>
+                                        <small>See a limited overview before deciding.</small>
+                                    </div>
+                                    <span className="landing-doctor-step-icon" aria-hidden="true">⌕</span>
+                                </div>
+                                <div className="landing-doctor-flow-step">
+                                    <span className="landing-doctor-step-number">03</span>
+                                    <div>
+                                        <strong>Approved access to reports</strong>
+                                        <small>Review readings, trends and summaries.</small>
+                                    </div>
+                                    <span className="landing-doctor-step-icon" aria-hidden="true">✓</span>
+                                </div>
+                            </div>
+                            <div className="landing-doctor-privacy">
+                                <span aria-hidden="true">♡</span>
+                                Patients can revoke access at any time.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* How it Works Section */}
                 <section className="landing-how" id="how-it-works">
                     <div className="landing-how-copy">
@@ -287,7 +367,6 @@ function Landing() {
             {/* Footer */}
             <footer className="landing-footer">
                 <Link to="/" className="landing-brand" aria-label="Sweety Home">
-                    <span className="landing-brand-mark" aria-hidden="true">🌸</span>
                     <span>Sweety</span>
                 </Link>
                 <p>Small steps towards better health awareness.</p>

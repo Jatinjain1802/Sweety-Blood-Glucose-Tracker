@@ -2281,7 +2281,11 @@ select {
   padding: 0 24px;
   border: 1px solid var(--landing-accent);
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--landing-accent-light) 0%, var(--landing-accent) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--landing-accent-light) 0%,
+    var(--landing-accent) 100%
+  );
   color: #ffffff;
   font-size: 0.92rem;
   font-weight: 700;
@@ -2296,7 +2300,11 @@ select {
 
 .landing-button:hover {
   color: #ffffff;
-  background: linear-gradient(135deg, var(--landing-accent) 0%, var(--landing-accent-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--landing-accent) 0%,
+    var(--landing-accent-hover) 100%
+  );
   border-color: var(--landing-accent-hover);
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(225, 29, 72, 0.32);
@@ -2353,8 +2361,16 @@ select {
 .landing-hero {
   position: relative;
   background:
-    radial-gradient(ellipse at 85% 25%, rgba(255, 225, 231, 0.75), transparent 45%),
-    radial-gradient(ellipse at 15% 10%, rgba(255, 241, 242, 0.6), transparent 40%),
+    radial-gradient(
+      ellipse at 85% 25%,
+      rgba(255, 225, 231, 0.75),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 15% 10%,
+      rgba(255, 241, 242, 0.6),
+      transparent 40%
+    ),
     linear-gradient(180deg, #ffffff 0%, #fffafb 100%);
   border-bottom: 1px solid #f6f0f2;
 }
@@ -2464,7 +2480,11 @@ select {
   content: "";
   position: absolute;
   inset: 12% 8%;
-  background: radial-gradient(circle, rgba(225, 29, 72, 0.12) 0%, rgba(225, 29, 72, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(225, 29, 72, 0.12) 0%,
+    rgba(225, 29, 72, 0) 70%
+  );
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;
@@ -2752,7 +2772,9 @@ select {
 .landing-feature-card:hover {
   transform: translateY(-5px);
   border-color: var(--landing-border);
-  box-shadow: 0 16px 36px -8px rgba(225, 29, 72, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  box-shadow:
+    0 16px 36px -8px rgba(225, 29, 72, 0.1),
+    0 4px 12px -2px rgba(15, 23, 42, 0.04);
 }
 
 .landing-feature-icon {
@@ -2825,7 +2847,9 @@ select {
   font-weight: 800;
   font-size: 0.95rem;
   box-shadow: 0 2px 8px rgba(225, 29, 72, 0.1);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .landing-step:hover > span {
@@ -3700,4 +3724,183 @@ select {
   color: var(--text-muted);
   font-weight: 600;
 }
-
+/* Doctor–patient collaboration section */
+.landing-doctor {
+  padding: 88px 24px;
+  background: #fff7f8;
+}
+.landing-doctor-inner {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 0.95fr;
+  align-items: center;
+  gap: 64px;
+}
+.landing-doctor-copy h2 {
+  margin: 14px 0 16px;
+  color: #271c22;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+}
+.landing-doctor-copy > p {
+  max-width: 560px;
+  color: #75656d;
+  line-height: 1.75;
+}
+.landing-doctor-benefits {
+  display: grid;
+  gap: 20px;
+  margin-top: 30px;
+}
+.landing-doctor-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+.landing-doctor-benefit > span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  color: #be3157;
+  background: #ffe3eb;
+  font-weight: 800;
+}
+.landing-doctor-benefit strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #33252c;
+}
+.landing-doctor-benefit p {
+  margin: 0;
+  color: #796a71;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+.landing-doctor-visual {
+  padding: 26px;
+  border: 1px solid #f4dce4;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 22px 60px rgba(119, 43, 69, 0.09);
+}
+.landing-doctor-visual-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #f4e8ec;
+}
+.landing-doctor-icon {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  border-radius: 14px;
+  color: #bd3157;
+  background: #ffe8ef;
+  font-size: 1.5rem;
+}
+.landing-doctor-visual-heading strong,
+.landing-doctor-visual-heading small,
+.landing-doctor-flow-step strong,
+.landing-doctor-flow-step small {
+  display: block;
+}
+.landing-doctor-visual-heading strong {
+  color: #33252c;
+  font-size: 0.98rem;
+}
+.landing-doctor-visual-heading small {
+  margin-top: 4px;
+  color: #8a7981;
+  font-size: 0.8rem;
+}
+.landing-doctor-secure {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  margin-left: auto;
+  border-radius: 50%;
+  color: #287c58;
+  background: #e6f6ed;
+  font-weight: 800;
+}
+.landing-doctor-flow {
+  display: grid;
+  gap: 12px;
+  padding: 22px 0;
+}
+.landing-doctor-flow-step {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid #f3e8ec;
+  border-radius: 15px;
+  background: #fffdfd;
+}
+.landing-doctor-step-number {
+  color: #c13b60;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.landing-doctor-flow-step strong {
+  color: #382932;
+  font-size: 0.9rem;
+}
+.landing-doctor-flow-step small {
+  margin-top: 5px;
+  color: #8a7981;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.landing-doctor-step-icon {
+  margin-left: auto;
+  color: #c13b60;
+  font-size: 1.2rem;
+}
+.landing-doctor-privacy {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  color: #7d5262;
+  background: #fff1f5;
+  font-size: 0.84rem;
+}
+.landing-doctor-privacy span {
+  color: #c13b60;
+  font-size: 1.1rem;
+}
+@media (max-width: 800px) {
+  .landing-doctor {
+    padding: 64px 20px;
+  }
+  .landing-doctor-inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .landing-doctor-visual {
+    padding: 20px;
+  }
+}
+@media (max-width: 480px) {
+  .landing-doctor-flow-step {
+    gap: 9px;
+    padding: 12px;
+  }
+  .landing-doctor-flow-step strong {
+    font-size: 0.82rem;
+  }
+  .landing-doctor-flow-step small {
+    font-size: 0.73rem;
+  }
+}
