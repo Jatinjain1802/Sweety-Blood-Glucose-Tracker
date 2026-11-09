@@ -64,16 +64,16 @@ function Navbar() {
 
   const navItems = isDoctor
     ? [
-        { label: "Dashboard", path: "/doctor-dashboard" },
-        { label: "Profile", path: "/profile" },
-      ]
+      { label: "Dashboard", path: "/doctor-dashboard" },
+      { label: "Profile", path: "/profile" },
+    ]
     : [
-        { label: "Dashboard", path: "/dashboard" },
-        { label: "Readings", path: "/readings" },
-        { label: "Reports", path: "/reports" },
-        { label: "My Doctor", path: "/my-doctor" },
-        { label: "Profile", path: "/profile" },
-      ];
+      { label: "Dashboard", path: "/dashboard" },
+      { label: "Readings", path: "/readings" },
+      { label: "Reports", path: "/reports" },
+      { label: "My Doctor", path: "/my-doctor" },
+      { label: "Profile", path: "/profile" },
+    ];
 
   return (
     <>
