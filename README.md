@@ -311,6 +311,7 @@ empty states. Last run: **28 backend + 9 frontend tests passing**.
 - **Polish:** accessibility pass (keyboard navigation, screen-reader labels),
   Redis caching for report results, and refreshing a session automatically
   instead of showing an error when a token expires.
+- **Add AI** assistent in the patients dashboard for the better assistance.
 
 ---
 
