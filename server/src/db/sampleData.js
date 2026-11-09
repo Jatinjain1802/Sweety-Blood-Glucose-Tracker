@@ -1,33 +1,3 @@
-const bcrypt = require("bcryptjs");
-const { pool, initializeDatabase } = require("../config/db");
-
-/**
- * ============================================================================
- * 🌸 SWEETY — COMPREHENSIVE SAMPLE DATA & DOCTORS GENERATOR
- * ============================================================================
- *
- * 🎓 Node.js, PostgreSQL & Database Concepts Explained:
- *
- * 1. CLI vs. Module Import Detection (`require.main === module`):
- *    - In Node.js, `require.main` points to the entry-point file that was executed.
- *    - If `require.main === module`, it means this file was run directly from the
- *      command line: `node src/db/sampleData.js`. In that case, we should close
- *      the database connection pool (`pool.end()`) when finished.
- *    - If imported via `const { insertSampleData } = require(...)`, it was called
- *      by the server on startup. In that case, closing the pool would crash the
- *      running server! The `{ closePool = true }` option controls this behavior.
- *
- * 2. ACID Transactions (`BEGIN`, `COMMIT`, `ROLLBACK`):
- *    - Seeding inserts users, hundreds of readings, and doctor-patient requests.
- *    - Wrapping everything in a transaction guarantees that if any step fails,
- *      the database is cleanly rolled back with no partial or corrupted records.
- *
- * 3. Idempotent Seeding:
- *    - Removes previous demo accounts before re-inserting, allowing this script
- *      to be run repeatedly without primary-key or unique-constraint collisions.
- * ============================================================================
- */
-
 const DEMO_PATIENT = {
   name: "Demo Patient",
   email: "demo@sweety.com",
@@ -77,6 +47,7 @@ function generateValue(day, slotIndex) {
   // Realistic clinical variations between 75 and 185 mg/dL
   const base = 85 + ((day * 7 + slotIndex * 19) % 65);
   const variation = ((day + slotIndex * 11) % 17) - 8;
+
   return Math.min(600, Math.max(40, base + variation));
 }
 
@@ -115,46 +86,39 @@ async function insertSampleData({ closePool = true } = {}) {
   try {
     await client.query("BEGIN");
 
-    const allEmails = [
-      DEMO_PATIENT.email,
-      ...DEMO_DOCTORS.map((d) => d.email),
-    ];
-
-    // 1. Remove previous demo accounts so seeding is idempotent
-    await client.query(
-      "DELETE FROM users WHERE email = ANY($1::text[])",
-      [allEmails],
-    );
-
-    // 2. Insert Demo Patient
+    // 1. Upsert Demo Patient — id stays stable if the account already exists
     const patientHash = await bcrypt.hash(DEMO_PATIENT.password, 10);
     const patientResult = await client.query(
       `INSERT INTO users (name, email, password_hash, role)
        VALUES ($1, $2, $3, $4)
+       ON CONFLICT (email) DO UPDATE
+         SET name = EXCLUDED.name,
+             password_hash = EXCLUDED.password_hash,
+             role = EXCLUDED.role
        RETURNING id`,
-      [
-        DEMO_PATIENT.name,
-        DEMO_PATIENT.email,
-        patientHash,
-        DEMO_PATIENT.role,
-      ],
+      [DEMO_PATIENT.name, DEMO_PATIENT.email, patientHash, DEMO_PATIENT.role],
     );
     const patientId = patientResult.rows[0].id;
 
-    // 3. Insert Demo Doctors
+    // 2. Upsert Demo Doctors — ids stay stable across reseeds
     const doctorIds = {};
     for (const doc of DEMO_DOCTORS) {
       const docHash = await bcrypt.hash(doc.password, 10);
       const docResult = await client.query(
         `INSERT INTO users (name, email, password_hash, role)
          VALUES ($1, $2, $3, $4)
+         ON CONFLICT (email) DO UPDATE
+           SET name = EXCLUDED.name,
+               password_hash = EXCLUDED.password_hash,
+               role = EXCLUDED.role
          RETURNING id`,
         [doc.name, doc.email, docHash, doc.role],
       );
       doctorIds[doc.email] = docResult.rows[0].id;
     }
 
-    // 4. Insert Comprehensive Blood Glucose Readings for Patient
+    // 3. Insert Comprehensive Blood Glucose Readings for Patient
+    //    ON CONFLICT DO NOTHING -> rerunning never duplicates or errors
     const dates = generateDates();
     let readingsCount = 0;
 
@@ -164,23 +128,31 @@ async function insertSampleData({ closePool = true } = {}) {
 
         await client.query(
           `INSERT INTO readings (user_id, date, slot, value)
-           VALUES ($1, $2, $3, $4)`,
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (user_id, date, slot) DO NOTHING`,
           [patientId, dates[day], slots[slotIndex], value],
         );
         readingsCount++;
       }
     }
 
-    // 5. Establish Sample Relationships to demonstrate all feature workflows:
+    // 4. Establish Sample Relationships to demonstrate all feature workflows:
     //    a) Dr. Ananya Roy -> ACCEPTED relationship (immediate full report access)
     //    b) Dr. Arjun Mehta -> PENDING relationship (incoming request with summary)
     //    c) Dr. Priya Sharma & Dr. Rajesh Gupta -> AVAILABLE (for testing search & request)
+    //    WHERE NOT EXISTS -> one row per (doctor, patient), safe to rerun.
+    //    (ON CONFLICT is not used here because this table's UNIQUE constraint
+    //     is DEFERRABLE, which Postgres cannot use as an ON CONFLICT target.)
 
     const ananyaId = doctorIds["doctor@sweety.com"];
     if (ananyaId) {
       await client.query(
         `INSERT INTO doctor_patient_requests (doctor_id, patient_id, status, requested_at, responded_at)
-         VALUES ($1, $2, 'accepted', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days')`,
+         SELECT $1::int, $2::int, 'accepted', NOW() - INTERVAL '3 days', NOW() - INTERVAL '2 days'
+         WHERE NOT EXISTS (
+           SELECT 1 FROM doctor_patient_requests
+           WHERE doctor_id = $1 AND patient_id = $2
+         )`,
         [ananyaId, patientId],
       );
     }
@@ -189,7 +161,11 @@ async function insertSampleData({ closePool = true } = {}) {
     if (arjunId) {
       await client.query(
         `INSERT INTO doctor_patient_requests (doctor_id, patient_id, status, requested_at)
-         VALUES ($1, $2, 'pending', NOW() - INTERVAL '4 hours')`,
+         SELECT $1::int, $2::int, 'pending', NOW() - INTERVAL '4 hours'
+         WHERE NOT EXISTS (
+           SELECT 1 FROM doctor_patient_requests
+           WHERE doctor_id = $1 AND patient_id = $2
+         )`,
         [arjunId, patientId],
       );
     }
@@ -205,10 +181,18 @@ async function insertSampleData({ closePool = true } = {}) {
     console.log(`   Readings: ${readingsCount} historical records`);
     console.log("--------------------------------------------------");
     console.log("🩺 Demo Doctor Accounts (Password: Doctor@123):");
-    console.log("   1. Dr. Ananya Roy    (doctor@sweety.com)   -> Status: ACCEPTED");
-    console.log("   2. Dr. Arjun Mehta   (dr.arjun@sweety.com)  -> Status: PENDING REQUEST");
-    console.log("   3. Dr. Priya Sharma  (dr.priya@sweety.com)  -> Status: AVAILABLE");
-    console.log("   4. Dr. Rajesh Gupta  (dr.rajesh@sweety.com) -> Status: AVAILABLE");
+    console.log(
+      "   1. Dr. Ananya Roy    (doctor@sweety.com)   -> Status: ACCEPTED",
+    );
+    console.log(
+      "   2. Dr. Arjun Mehta   (dr.arjun@sweety.com)  -> Status: PENDING REQUEST",
+    );
+    console.log(
+      "   3. Dr. Priya Sharma  (dr.priya@sweety.com)  -> Status: AVAILABLE",
+    );
+    console.log(
+      "   4. Dr. Rajesh Gupta  (dr.rajesh@sweety.com) -> Status: AVAILABLE",
+    );
     console.log("==================================================");
 
     return { patientId, doctorIds, readingsCount };
