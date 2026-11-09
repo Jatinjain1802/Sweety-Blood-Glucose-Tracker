@@ -72,6 +72,38 @@ readings – every query is scoped to the authenticated user id.
 
 ---
 
+## 📸 Screenshots & recordings
+
+### Patient side
+
+![Landing page and patient dashboard](user_dashboard.png)
+
+![Adding and editing glucose readings](user_reading_management.png)
+
+![Daily, month-to-date and monthly reports](user_reports_management.png)
+
+![Glucose trend charts on the Reports page](user_report_graphs.png)
+
+![Patient profile page](user_profile_page.png)
+
+![Patient sending an access request to a doctor](user_adding_doctor.png)
+
+### Doctor side
+
+![Doctor dashboard with pending and accepted patients](doctor_dashboard.png)
+
+![Doctor viewing a patient's analysis after consent](<patient_analyis_(via doctor).png>)
+
+![Doctor profile page](doctor_profile.png)
+
+### Recordings
+
+- [Landing page walkthrough (MP4)](landing_page.mp4)
+- [Doctor dashboard walkthrough (MP4)](doctor_dashboard.mp4)
+- [Patient dashboard walkthrough (recording)](https://drive.google.com/file/d/1a64JOs3yipZ2BUkT-MaDfK7h0oNgi8s3/view?usp=sharing)
+
+---
+
 ## 🛠️ Tech stack
 
 **Frontend:** React, Vite, React Router, Axios, Recharts, plain CSS.
